@@ -39,8 +39,6 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 1. Run the development server:
   ```bash
   npm run dev
-  # or
-  yarn dev
   ```
 2. After running the development server, on your browser open [http://localhost:3000](http://localhost:3000) 
 3. Start editing the page by modifying `pages/index.tsx`

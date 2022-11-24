@@ -1,5 +1,3 @@
-//Example script of USB serial
-
 #include "pico/stdlib.h"
 #include <stdio.h>
 #include "hardware/uart.h"
@@ -12,7 +10,8 @@
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 
-int main() {
+int main()
+{
     // Set up our UART with the required speed.
     uart_init(UART_ID, BAUD_RATE);
 
@@ -20,8 +19,9 @@ int main() {
     // Set datasheet for more information on function select
     gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
     gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
- 
-    while (true) { 
+
+    while (true)
+    {
         uart_puts(UART_ID, " Hello, UART!\n");
         sleep_ms(1000);
     }

@@ -1,4 +1,3 @@
-
 #include "hardware/uart.h"
 #include "hardware/irq.h"
 #include "pico/stdlib.h"
@@ -23,6 +22,8 @@ int flagNegative = 0;
 // RX interrupt handler
 void on_uart_rx()
 {
+    clock_t startTime = clock(); // Measure Execution Time of Code
+    clock_t endTime = clock();
     while (uart_is_readable(UART_ID))
     {
         uint8_t ch = uart_getc(UART_ID);
@@ -36,17 +37,33 @@ void on_uart_rx()
             }
             else if (flagNegative == 1)
             { // Negative number 2nd character E.g. -5 to -1, (5)
+                endTime = clock();
+
                 uart_putc(UART_ID, ch);
                 uart_puts(UART_ID, " - Negative Number\n\r");
                 flagNegative = 0;
             }
             else
             { // Positive number 1st character E.g. 0 - 5
+                endTime = clock();
+
                 uart_putc(UART_ID, ch);
                 uart_puts(UART_ID, " - Positive Number\n\r");
             }
         }
+        if (ch != 45)
+        {
+            // Latency
+            double executionTime = (double)(endTime - startTime) / (double)CLOCKS_PER_SEC;
+            printf("\n\rExecution Time of Code: %.4f millisecond\n\r", executionTime);
+        }
     }
+}
+
+// Measure Execution Time of Code
+clock_t clock()
+{
+    return (clock_t)time_us_64() / 10000;
 }
 
 int main()

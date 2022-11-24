@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.Pseudocode": "pseudocode",
+        "string.h": "c"
+    }
+}

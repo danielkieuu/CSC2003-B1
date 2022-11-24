@@ -2,6 +2,6 @@
 
 Github Handle | Student ID | Team
 --- | --- | --- |
-<a href="https://github.com/yilinTay1/">yilinTay1</a> | 2103154 | Communication
-<a href="https://github.com/luazhizhan/">luazhizhan</a> | 2101393 | Communication
-<a href="https://github.com/Kenny-DevTech/">Kenny-DevTech</a> | 2102764 | Communication
+<a href="https://github.com/yilinTay1/">Yi Lin Tay</a> | 2103154 
+<a href="https://github.com/luazhizhan/">Lua Zhi Zhan</a> | 2101393 
+<a href="https://github.com/Kenny-DevTech/">Kenny Lim</a> | 2102764 

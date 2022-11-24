@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "pico/stdlib.h"
-#include "hardware/pio.h"
-#include "hardware/gpio.h"
 #include "hardware/timer.h"
-#include "hardware/clocks.h"
 #include "hardware/pwm.h"
 #include "PID-PWM.h"
 
@@ -12,16 +9,22 @@ const int INPUT_A_LEFT = 18;
 const int INPUT_B_LEFT = 19;
 const int INPUT_A_RIGHT = 20;
 const int INPUT_B_RIGHT = 21;
-const int WHEEL_ENCODER_RIGHT = 13;
+const int WHEEL_ENCODER_RIGHT = 9;
 const int WHEEL_ENCODER_LEFT = 8;
 const int PWM_LEFT = 15;
 const int PWM_RIGHT = 14;
+const int DEGREE_PER_NOTCH = 9;
+
+bool is_turning = false;
 
 float wheel_left_rpm = 0.0;
 float wheel_right_rpm = 0.0;
 
 int PWM_RIGHT_CYCLE = 32768;
 int PWM_LEFT_CYCLE = 32768;
+
+int degrees_to_turn = 0;
+int counter_notches_turn = 0;
 
 
 PID pid_control, *pid_ctrl_ptr;
@@ -48,57 +51,78 @@ void stop_movement(){
     gpio_put(INPUT_B_RIGHT, 0);
 }
 
-void turn_left(){
+void turn_left(int degrees){
+    //Alternate channel to turn
     gpio_put(INPUT_A_LEFT, 1);
     gpio_put(INPUT_A_RIGHT, 0);
     gpio_put(INPUT_B_LEFT, 0);
     gpio_put(INPUT_B_RIGHT, 1);
+    degrees_to_turn = degrees;
+    is_turning = true;
 }
 
-void turn_right(){
+void turn_right(int degrees){
+    //Alternate channel to turn
     gpio_put(INPUT_A_LEFT, 0);
     gpio_put(INPUT_A_RIGHT, 1);
     gpio_put(INPUT_B_LEFT, 1);
     gpio_put(INPUT_B_RIGHT, 0);
+    degrees_to_turn = degrees;
+    is_turning = true;
 }
 
-void move_forward() {
-    // Set channel A & B output high for PWM_RIGHT_CYCLE & PWM_LEFT_CYCLE number of cycles
-    if (!gpio_get(INPUT_B_LEFT) && !gpio_get(INPUT_B_RIGHT)){
-        gpio_put(INPUT_B_LEFT, 1);
-        gpio_put(INPUT_B_RIGHT, 1);
-    } 
+void set_duty_cycle() {
     pwm_clear_irq(pwm_gpio_to_slice_num(PWM_RIGHT));
     pwm_set_gpio_level(PWM_RIGHT, PWM_RIGHT_CYCLE);
     pwm_set_gpio_level(PWM_LEFT, PWM_LEFT_CYCLE);
 }
 
-
+void calculate_pwm_change_pwm(){
+    pid_ctrl_ptr = &pid_control;
+    pid_ctrl_ptr->setpoint = wheel_right_rpm;
+    pid_ctrl_ptr->measured = wheel_left_rpm;
+    float diff = PID_Compute(get_absolute_time(), pid_ctrl_ptr);
+    wheel_left_rpm += diff;
+    change_pwm(diff);
+}
 
 void wheel_speed_right(){
     static int counter_right = 0;
     counter_right += 1;
     if (counter_right == 20){
-        wheel_right_rpm += 1.0;
+        wheel_right_rpm+= 1.0;
         counter_right = 0;
-        pid_ctrl_ptr = &pid_control;
-        pid_ctrl_ptr->setpoint = wheel_right_rpm;
-        pid_ctrl_ptr->measured = wheel_left_rpm;
-        float diff = PID_Compute(get_absolute_time(), pid_ctrl_ptr);
-        wheel_left_rpm += diff;
-        change_pwm(diff);
+        calculate_pwm_change_pwm();
     }
 }
 
 void wheel_speed_left(){
     static int counter_left = 0;
     counter_left += 1;
-    if (counter_left == 20){
+    //only need to check on one wheel since both are turning
+    if (is_turning){
+        if (counter_notches_turn * DEGREE_PER_NOTCH >= degrees_to_turn){
+            stop_movement();
+            degrees_to_turn = 0;
+            counter_notches_turn = 0;
+            is_turning = false;
+        } else {
+            counter_notches_turn += 1;
+        }
+    }
+    else if (counter_left == 20) {
         wheel_left_rpm += 1.0;
         counter_left = 0;
+        calculate_pwm_change_pwm();
     }
-    
-    
+}
+
+void move_forward(){
+    // Set channel B output high
+    gpio_put(INPUT_A_LEFT, 0);
+    gpio_put(INPUT_A_RIGHT, 0);
+    gpio_put(INPUT_B_LEFT, 1);
+    gpio_put(INPUT_B_RIGHT, 1);
 }
 
 void gpio_callback(uint gpio, uint32_t events){
@@ -107,6 +131,12 @@ void gpio_callback(uint gpio, uint32_t events){
     }
     if (gpio==WHEEL_ENCODER_LEFT){
         wheel_speed_left();
+    }
+    if (gpio==10){
+        move_forward();
+    }
+    if (gpio==11){
+        stop_movement();
     }
 }
 
@@ -153,10 +183,10 @@ int main()
 {
     stdio_init_all();
     //Init PID struct
-    PID_Coefficents(&pid_control, 0.5, 0.05, 0.01, 0.02, 1);
+    PID_Coefficents(&pid_control, 0.05, 0.05, 0.01, 0.02, 1);
 
     //Init GPIO required
-    //GPIO 7 & 8 for wheel encoders
+    //GPIO  8 & 9 for wheel encoders
     //GPIO 18-21 for wheel direction (18+19 for wheel a, 20+21 for wheel b)
     gpio_init(WHEEL_ENCODER_RIGHT);
     gpio_init(WHEEL_ENCODER_LEFT);
@@ -169,7 +199,7 @@ int main()
     gpio_set_function(PWM_RIGHT, GPIO_FUNC_PWM);
     gpio_set_function(PWM_LEFT, GPIO_FUNC_PWM);
 
-    //Set GPIO to in for 7 & 8
+    //Set GPIO to in for 8 & 9
     //Set GPIO to out for GPIO 18-21 (controls wheel direction)
     gpio_set_dir(WHEEL_ENCODER_RIGHT, GPIO_IN);
     gpio_set_dir(WHEEL_ENCODER_LEFT, GPIO_IN);
@@ -184,21 +214,33 @@ int main()
     gpio_put(INPUT_A_RIGHT, 0);
     gpio_put(INPUT_B_RIGHT, 0);
 
-    //Pull on 7 & 8
+    //Pull on 8 & 9
     gpio_pull_up(WHEEL_ENCODER_RIGHT);
     gpio_pull_up(WHEEL_ENCODER_LEFT);
+
+    gpio_init(10);
+    gpio_set_dir(10, GPIO_IN);
+    gpio_put(10, 0);
+    gpio_pull_up(10);
+
+    gpio_init(11);
+    gpio_set_dir(11, GPIO_IN);
+    gpio_put(11, 0);
+    gpio_pull_up(11);
+    gpio_set_irq_enabled(10, GPIO_IRQ_EDGE_FALL, 1);
+    gpio_set_irq_enabled(11, GPIO_IRQ_EDGE_FALL, 1);
     
     // Find out which PWM slice is connected to GPIO 14
     uint slice_num = pwm_gpio_to_slice_num(PWM_RIGHT);
 
-    //Enabled Interrupts on GPIO 7 & 8
+    //Enabled Interrupts on GPIO 8 & 9
     gpio_set_irq_enabled_with_callback(WHEEL_ENCODER_RIGHT, GPIO_IRQ_EDGE_FALL, 1, &gpio_callback);
     gpio_set_irq_enabled(WHEEL_ENCODER_LEFT, GPIO_IRQ_EDGE_FALL, 1);
 
     //Setup PWM and interrupt
     pwm_clear_irq(slice_num);
     pwm_set_irq_enabled(slice_num, true);
-    irq_set_exclusive_handler(PWM_IRQ_WRAP, move_forward);
+    irq_set_exclusive_handler(PWM_IRQ_WRAP, set_duty_cycle);
     irq_set_enabled(PWM_IRQ_WRAP, true);
 
     // Get PWM config

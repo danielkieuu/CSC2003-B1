@@ -37,20 +37,17 @@ void on_uart_rx()
             }
             else if (flagNegative == 1)
             { // Negative number 2nd character E.g. -5 to -1, (5)
-                endTime = clock();
-
                 uart_putc(UART_ID, ch);
                 uart_puts(UART_ID, " - Negative Number\n\r");
                 flagNegative = 0;
             }
             else
             { // Positive number 1st character E.g. 0 - 5
-                endTime = clock();
-
                 uart_putc(UART_ID, ch);
                 uart_puts(UART_ID, " - Positive Number\n\r");
             }
         }
+        endTime = clock();
         if (ch != 45)
         {
             // Latency

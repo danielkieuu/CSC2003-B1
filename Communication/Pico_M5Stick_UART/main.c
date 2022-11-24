@@ -14,43 +14,91 @@
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 
+// TODO : GET SPEED, HUMP HEIGHT, DISTANCE, BARCODE DATA
 volatile int count = 0;
-
 bool repeating_timer_callback(struct repeating_timer *t)
 {
-    char text[100];
-    sprintf(text, "1,5,2,6,%d\n", count);
+    char text[16];
+    sprintf(text, "30,40,60,1123%d\n", count);
     uart_puts(UART_ID, text);
     count++;
+    if (count == 10)
+    {
+        count = 0;
+    }
     return true;
 }
 
 // RX interrupt handler
 void on_uart_rx()
 {
+    // negative flag
     uint8_t flagNegative = 0;
+
+    // Declare variables
+    int8_t zzx = -6;
+    int8_t zzy = -6;
+
     while (uart_is_readable(UART_ID))
     {
-        uint8_t ch = uart_getc(UART_ID);
+        char ch = uart_getc(UART_ID);
 
-        if (uart_is_writable(UART_ID))
+        // Negative symbol (-) detected
+        if ((uint8_t)ch == 45)
         {
-            if (ch == 45)
-            { // Negative number 1st character E.g. -5 to -1, (-)
-                flagNegative = 1;
-                uart_putc(UART_ID, ch);
-            }
-            else if (flagNegative == 1)
-            { // Negative number 2nd character E.g. -5 to -1, (5)
-                uart_putc(UART_ID, ch);
-                uart_puts(UART_ID, "\nHello, Negative Number\n");
-                flagNegative = 0;
+            // Set flag
+            flagNegative = 1;
+        }
+
+        else if (flagNegative == 1)
+        {
+            // Set negative number to zzx or zzy
+            if (zzx == -6)
+            {
+                // convert ascii char to int
+                zzx = ch - '0';
+
+                // Negate value
+                zzx *= -1;
             }
             else
-            { // Positive number 1st character E.g. 0 - 5
-                uart_putc(UART_ID, ch);
-                uart_puts(UART_ID, "\nHello, Positive Number\n");
+            {
+                // convert ascii char to int
+                zzy = ch - '0';
+
+                // Negate value
+                zzy *= -1;
             }
+
+            // reset flag
+            flagNegative = 0;
+        }
+        else
+        {
+            // Set positivie number to zzx or zzy
+            if (zzx == -6)
+            {
+                // convert ascii char to int
+                zzx = ch - '0';
+            }
+            else
+            {
+                // convert ascii char to int
+                zzy = ch - '0';
+            }
+        }
+
+        // call mapping gotoNode if zzx and zzy are set
+        if (zzx != -6 && zzy != -6)
+        {
+            // TODO: Use this
+            // gotoNode(int zzx, int zzy)
+
+            char text[6];
+            sprintf(text, "%d,%d\n", zzx, zzy);
+            uart_puts(UART_ID, text);
+            zzx = -6;
+            zzy = -6;
         }
     }
 }

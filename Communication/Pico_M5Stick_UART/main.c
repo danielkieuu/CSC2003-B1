@@ -12,14 +12,16 @@
 #define UART_RX_PIN 1
 
 // TODO : GET SPEED, HUMP HEIGHT, DISTANCE, BARCODE DATA
-volatile int count = 0;
+volatile uint8_t count = 0;
 bool repeating_timer_callback(struct repeating_timer *t)
 {
     char text[16];
-    sprintf(text, "30,40,60,1123%d\n", count);
+    sprintf(text, "3%d,4%d,6%d,1123%d\n", count, count, count, count);
     uart_puts(UART_ID, text);
+
+    // For simulating changing data
     count++;
-    if (count == 10)
+    if (count == 5)
     {
         count = 0;
     }
@@ -33,8 +35,8 @@ void on_uart_rx()
     uint8_t flagNegative = 0;
 
     // Declare variables
-    int8_t zzx = -6;
-    int8_t zzy = -6;
+    int8_t x = -6;
+    int8_t y = -6;
 
     while (uart_is_readable(UART_ID))
     {
@@ -49,22 +51,22 @@ void on_uart_rx()
 
         else if (flagNegative == 1)
         {
-            // Set negative number to zzx or zzy
-            if (zzx == -6)
+            // Set negative number to x or y
+            if (x == -6)
             {
                 // convert ascii char to int
-                zzx = ch - '0';
+                x = ch - '0';
 
                 // Negate value
-                zzx *= -1;
+                x *= -1;
             }
             else
             {
                 // convert ascii char to int
-                zzy = ch - '0';
+                y = ch - '0';
 
                 // Negate value
-                zzy *= -1;
+                y *= -1;
             }
 
             // reset flag
@@ -72,30 +74,30 @@ void on_uart_rx()
         }
         else
         {
-            // Set positivie number to zzx or zzy
-            if (zzx == -6)
+            // Set positivie number to x or y
+            if (x == -6)
             {
                 // convert ascii char to int
-                zzx = ch - '0';
+                x = ch - '0';
             }
             else
             {
                 // convert ascii char to int
-                zzy = ch - '0';
+                y = ch - '0';
             }
         }
 
-        // call mapping gotoNode if zzx and zzy are set
-        if (zzx != -6 && zzy != -6)
+        // call mapping gotoNode if x and y are set
+        if (x != -6 && y != -6)
         {
             // TODO: Use this
-            // gotoNode(int zzx, int zzy)
+            // gotoNode(int x, int y)
 
             char text[6];
-            sprintf(text, "%d,%d\n", zzx, zzy);
+            sprintf(text, "%d,%d\n", x, y);
             uart_puts(UART_ID, text);
-            zzx = -6;
-            zzy = -6;
+            x = -6;
+            y = -6;
         }
     }
 }
@@ -130,7 +132,7 @@ int main()
 
     // Set up repeating timer
     struct repeating_timer timer;
-    add_repeating_timer_ms(3000, repeating_timer_callback, NULL, &timer);
+    add_repeating_timer_ms(1000, repeating_timer_callback, NULL, &timer);
 
     while (1)
     {

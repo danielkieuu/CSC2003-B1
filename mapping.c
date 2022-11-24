@@ -153,6 +153,20 @@ bool existInList(struct List *head, struct Node *find)
 	return false;
 }
 
+struct List *freeList(struct List *head)
+{
+	struct List *temp;
+	struct List *temp2;
+	temp = head;
+	temp2 = head;
+	while (temp != NULL)
+	{
+		free(temp);
+		temp = temp2->next;
+		temp2 = temp2->next;
+	}
+}
+
 struct Node *NodeList[NUMOFNODESTODECLADE];
 struct Node *currNode;
 struct Node *pathfindingNode;
@@ -293,6 +307,8 @@ void Move() // its an astar/move function
 	if (true)
 	{
 		pathfindingNode = currNode;
+		freeList(closedList);
+		freeList(openList);
 		closedList = NULL;
 		openList = NULL;
 		closedList = addList(closedList, currNode);
@@ -799,6 +815,26 @@ void Map()
 		Move(); // TODO: MAP AFTER MOVE //done
 		GenerateNeighbourNode();
 	}
+}
+
+void gotoNode(int zzx; int zzy)
+{
+	struct Node *zzNode;
+	
+	for (int i; i < NUMOFNODESTODECLADE; i++)
+	{
+		if (NodeList[i] != NULL)
+		{
+			if (NodeList[i]->x == zzx && NodeList[i]->y == zzy)
+			{
+				goalNode = NodeList[i];
+				targetx = goalNode->x;
+				targety = goalNode->y;
+				break;
+			}
+		}
+	}
+	Move();
 }
 int main() {
 	printf("hello world");

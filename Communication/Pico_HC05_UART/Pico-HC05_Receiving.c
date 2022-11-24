@@ -51,7 +51,7 @@ void on_uart_rx()
         endTime = clock();
         if (ch != 45)
         {
-            double executionTime = (double)(endTime - startTime) / CLOCKS_PER_SEC;
+            double executionTime = (double)(endTime - startTime) / (double)CLOCKS_PER_SEC;
             printf("\n\rExecution Time of Code: %.4f seconds\n\r", executionTime);
         }
     }

@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "PID-PWM.h"
 #define NODELENGTH 15.0
 #define NUMOFNODESTODECLADE 30
 float frontScannedLength;
@@ -186,10 +187,58 @@ float ScanRight(){	printf("hello world");}
 // void moveBack(){	printf("hello world");}
 
 // start of reagan
-void turnLeftMove(){	printf("hello world");}
-void moveForward(){	printf("hello world");}
-void turnRightMove(){	printf("hello world");}
-void turn180Move(){	printf("hello world");}
+void turnLeftMove()
+{	
+	float currScanLength =0;
+	turn_left(90);
+	frontScannedLength= ScanFoward();
+	currScanLength = frontScannedLength;
+	move_forward();
+	while 	(frontScannedLength-currScanLength > NODELENGTH)
+	{
+		currScanLength = ScanFoward();
+	}
+	stop_movement();
+}
+void moveForward()
+{	
+	float currScanLength =0;
+	frontScannedLength= ScanFoward();
+	currScanLength = frontScannedLength;
+	move_forward();
+	while 	(frontScannedLength-currScanLength > NODELENGTH)
+	{
+		currScanLength = ScanFoward();
+	}
+	stop_movement();
+}
+void turnRightMove()
+{
+	float currScanLength =0;
+	turn_right(90);
+	frontScannedLength= ScanFoward();
+	currScanLength = frontScannedLength;
+	move_forward();
+	while 	(frontScannedLength-currScanLength > NODELENGTH)
+	{
+		currScanLength = ScanFoward();
+	}
+	stop_movement();
+}
+void turn180Move()
+{	
+	float currScanLength =0;
+	turn_left(90);
+	turn_left(90);
+	frontScannedLength= ScanFoward();
+	currScanLength = frontScannedLength;
+	move_forward();
+	while 	(frontScannedLength-currScanLength > NODELENGTH)
+	{
+		currScanLength = ScanFoward();
+	}
+	stop_movement();
+}
 
 void moveLeft()
 {
@@ -213,6 +262,7 @@ void moveLeft()
 		currNode = currNode->left;
 		turn180Move(); // turn pid 180 to move car [true west] to east
 	}
+	direction = 1;
 }
 
 void moveRight()
@@ -237,6 +287,7 @@ void moveRight()
 		currNode = currNode->right;
 		moveForward(); // call pid to move car forward [true west]
 	}
+	direction = 3;
 }
 void moveBack()
 {
@@ -260,6 +311,7 @@ void moveBack()
 		currNode = currNode->back;
 		turnRightMove(); // call pid to move car forward [true west] to south
 	}
+	direction =2;
 }
 void moveFront()
 {
@@ -283,6 +335,7 @@ void moveFront()
 		currNode = currNode->back;
 		turnLeftMove(); // call pid to move car forward [true east] to north
 	}
+	direction = 0;
 }
 
 bool NodeInNodeList(int x, int y)
@@ -817,7 +870,7 @@ void Map()
 	}
 }
 
-void gotoNode(int zzx; int zzy)
+void gotoNode(int zzx, int zzy)
 {
 	struct Node *zzNode;
 	

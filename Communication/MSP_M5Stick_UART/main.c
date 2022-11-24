@@ -83,6 +83,8 @@ int main(void)
 
     /* Enabling MASTER interrupts */
     Interrupt_enableMaster();
+
+    /* Reset uart received data */
     uartReceivedData[0] = 0;
 
     UART_Printf(EUSCI_A2_BASE, "Starting UART\n\r");
@@ -95,8 +97,11 @@ int main(void)
 /* Timer for UART Communctions */
 void TA1_0_IRQHandler(void)
 {
-    char s[100] = "1,5,2,6,Embedded is the best";
+    /*Mock data*/
+    char s[100] = "30,40,1123";
     strcat(s, "\n\r");
+
+    /* Send to UART */
     UART_Printf(EUSCI_A2_BASE, s);
 }
 
@@ -104,15 +109,22 @@ void TA1_0_IRQHandler(void)
 void EUSCIA2_IRQHandler(void)
 {
     unsigned char c;
+    /*Received data via UART*/
     c = UART_receiveData(EUSCI_A2_BASE);
+
+    /*Delimeter to indicate end of string*/
     if (c == '#')
     {
-        int x = atoi(strtok(received, ","));
+        /*split string and convert both X and Y coordinates to int*/
+        int x = atoi(strtok(uartReceivedData, ","));
         int y = atoi(strtok(NULL, ","));
+
+        /*reset uart variable */
         uartReceivedData[0] = 0;
     }
     else
     {
+        /*concat uart variable */
         strcat(uartReceivedData, (const char *)&c);
     }
 }

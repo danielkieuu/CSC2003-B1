@@ -1,4 +1,4 @@
-# Pico UART M5STick
+# Pico connected to M5Stick via UART
 
 ## Setup
 

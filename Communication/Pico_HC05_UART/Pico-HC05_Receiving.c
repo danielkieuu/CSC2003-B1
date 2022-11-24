@@ -51,8 +51,9 @@ void on_uart_rx()
         endTime = clock();
         if (ch != 45)
         {
+            // Latency 
             double executionTime = (double)(endTime - startTime) / (double)CLOCKS_PER_SEC;
-            printf("\n\rExecution Time of Code: %.4f seconds\n\r", executionTime);
+            printf("\n\rExecution Time of Code: %.4f millisecond\n\r", executionTime);
         }
     }
 }

@@ -6,7 +6,7 @@ Github Handle | Student ID
 <a href="https://github.com/luazhizhan/">Lua Zhi Zhan</a> | 2101393 
 <a href="https://github.com/Kenny-DevTech/">Kenny Lim</a> | 2102764 
 
-## Pico Setup
+## Pico Set-up
 There are a few option listed to setup Pico:
 1. Reference this Video Tutorial [Click Here](https://www.youtube.com/watch?v=B5rQSoOmR5w) 
 2. Reference this Written Guide [Click Here](https://www.digikey.sg/en/maker/projects/raspberry-pi-pico-and-rp2040-cc-part-1-blink-and-vs-code/7102fb8bca95452e9df6150f39ae8422)

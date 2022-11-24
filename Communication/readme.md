@@ -32,7 +32,7 @@ Only `Ground`, `G32`, and `G33` pins are required to connect to `Ground`, `P3.2`
 ### Pico_HC05_UART
 Using pins 0 and 1 
 
-## Projects
+## Dashboard
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ### Getting Started

@@ -28,11 +28,6 @@ Only `Ground`, `G32`, and `G33` pins are required to connect to `Ground`, `P3.2`
 1. Send data from 'Pico' to `M5StickC PLUS` and to `MQTT client`.
 2. Repeating timer is created to send data to m5stick at 1s interval.
 
-#### Functional Test (Blackbox)
-
-1. The dashboard needs to show realtime speed, distance, hump height and bardcode data that are send by m5stickc plus from pico.
-2. The dashboard needs to send X and Y coordinates to m5stickc plus.
-
 ### MSP_M5Stick_UART
 
 1. Data would be send from `MSP` to `M5StickC PLUS` and to `MQTT client`

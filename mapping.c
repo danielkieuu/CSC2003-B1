@@ -230,7 +230,7 @@ void turnRightMove()
 	}
 	stop_movement();
 }
-void  turnBehindMove()
+void turnBehindMove()
 {
 	float currScanLength = 0;
 	turn_left(90);
@@ -265,7 +265,7 @@ void moveLeft()
 	if (direction == 3)
 	{
 		currNode = currNode->left;
-		 turnBehindMove(); // turn pid 180 to move car [true west] to east
+		turnBehindMove(); // turn pid 180 to move car [true west] to east
 	}
 	direction = 1;
 }
@@ -280,7 +280,7 @@ void moveRight()
 	if (direction == 1)
 	{
 		currNode = currNode->right;
-		 turnBehindMove(); // pid turn car 180 and move forward [true east] to west
+		turnBehindMove(); // pid turn car 180 and move forward [true east] to west
 	}
 	if (direction == 2)
 	{
@@ -299,7 +299,7 @@ void moveBack()
 	if (direction == 0)
 	{
 		currNode = currNode->back;
-		 turnBehindMove(); // pid turn car 180 and move forward [true north] to south
+		turnBehindMove(); // pid turn car 180 and move forward [true north] to south
 	}
 	if (direction == 1)
 	{
@@ -333,7 +333,7 @@ void moveFront()
 	if (direction == 2)
 	{
 		currNode = currNode->front;
-		 turnBehindMove(); // pid turn car 180 and ove forward [true south] to north
+		turnBehindMove(); // pid turn car 180 and ove forward [true south] to north
 	}
 	if (direction == 3)
 	{
@@ -459,13 +459,13 @@ void Move()
 					}
 				}
 				goalNode->status = 1;
-				printf("\nSuccessful navigated to Node \n"); 
-				return;										  
+				printf("\nSuccessful navigated to Node \n");
+				return;
 			}
 			temp = temp->next;
 		}
-		//adds neighbouring nodes if they exist to the openlist & calculate f=g+h
-		if (pathfindingNode->front != NULL) 
+		// adds neighbouring nodes if they exist to the openlist & calculate f=g+h
+		if (pathfindingNode->front != NULL)
 		{
 			if (!existInList(closedList, pathfindingNode->front) && !existInList(openList, pathfindingNode->front))
 			{
@@ -485,7 +485,7 @@ void Move()
 				}
 			}
 		}
-		if (pathfindingNode->back != NULL) 
+		if (pathfindingNode->back != NULL)
 		{
 			if (!existInList(closedList, pathfindingNode->back) && !existInList(openList, pathfindingNode->back))
 			{
@@ -505,7 +505,7 @@ void Move()
 				}
 			}
 		}
-		if (pathfindingNode->left != NULL) 
+		if (pathfindingNode->left != NULL)
 		{
 			if (!existInList(closedList, pathfindingNode->left) && !existInList(openList, pathfindingNode->left))
 			{
@@ -548,7 +548,7 @@ void Move()
 	}
 }
 
-void InitMapping() // initialize the map 
+void InitMapping() // initialize the map
 {
 	NodeList[0] = createnode();
 	currNode = NodeList[0];
@@ -626,14 +626,14 @@ void FindNode()
 	mappingCompleted = true;
 }
 
-//generate neighbouring nodes around car currently
+// generate neighbouring nodes around car currently
 void GenerateNeighbourNode()
 {
 	frontScannedLength = ScanForward();
 	rightScannedLength = ScanRight();
 	leftScannedLength = ScanLeft();
 
-	if (frontScannedLength < MINWALLLENGTH) //check if there is enough space to create a node
+	if (frontScannedLength < MINWALLLENGTH) // check if there is enough space to create a node
 	{
 		if (direction == 0)
 		{
@@ -664,6 +664,20 @@ void GenerateNeighbourNode()
 				currNode->front->back = currNode; // sets the new node to have the current node as its corresponding neighbour
 				currNode->front->status = 0;
 			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x && NodeList[i]->y == currNode->y + 1)
+						{
+							NodeList[i]->back = currNode;
+							currNode->front = NodeList[i];
+						}
+					}
+				}
+			}
 		}
 		else if (direction == 1)
 		{
@@ -674,6 +688,20 @@ void GenerateNeighbourNode()
 				currNode->left = NodeList[currentUsedNode];
 				currNode->left->right = currNode; // sets the new node to have the current node as its corresponding neighbour
 				currNode->left->status = 0;
+			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x - 1 && NodeList[i]->y == currNode->y)
+						{
+							NodeList[i]->right = currNode;
+							currNode->left = NodeList[i];
+						}
+					}
+				}
 			}
 		}
 		else if (direction == 2)
@@ -686,6 +714,20 @@ void GenerateNeighbourNode()
 				currNode->back->front = currNode; // sets the new node to have the current node as its corresponding neighbour
 				currNode->back->status = 0;
 			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x && NodeList[i]->y == currNode->y - 1)
+						{
+							NodeList[i]->front = currNode;
+							currNode->back = NodeList[i];
+						}
+					}
+				}
+			}
 		}
 		else if (direction == 3)
 		{
@@ -697,9 +739,23 @@ void GenerateNeighbourNode()
 				currNode->right->left = currNode; // sets the new node to have the current node as its corresponding neighbour
 				currNode->right->status = 0;
 			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x + 1 && NodeList[i]->y == currNode->y)
+						{
+							NodeList[i]->left = currNode;
+							currNode->right = NodeList[i];
+						}
+					}
+				}
+			}
 		}
 	}
-	if (rightScannedLength < MINWALLLENGTH)//check if there is enough space to create a node
+	if (rightScannedLength < MINWALLLENGTH) // check if there is enough space to create a node
 	{
 		if (direction == 0)
 		{
@@ -730,6 +786,20 @@ void GenerateNeighbourNode()
 				currNode->right->left = currNode; // sets the new node to have the current node as its corresponding neighbour
 				currNode->right->status = 0;
 			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x + 1 && NodeList[i]->y == currNode->y)
+						{
+							NodeList[i]->left = currNode;
+							currNode->right = NodeList[i];
+						}
+					}
+				}
+			}
 		}
 		else if (direction == 1)
 		{
@@ -740,6 +810,20 @@ void GenerateNeighbourNode()
 				currNode->front = NodeList[currentUsedNode];
 				currNode->front->back = currNode; // sets the new node to have the current node as its corresponding neighbour
 				currNode->front->status = 0;
+			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x && NodeList[i]->y == currNode->y + 1)
+						{
+							NodeList[i]->back = currNode;
+							currNode->front = NodeList[i];
+						}
+					}
+				}
 			}
 		}
 		else if (direction == 2)
@@ -752,6 +836,20 @@ void GenerateNeighbourNode()
 				currNode->left->right = currNode; // sets the new node to have the current node as its corresponding neighbour
 				currNode->left->status = 0;
 			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x - 1 && NodeList[i]->y == currNode->y)
+						{
+							NodeList[i]->right = currNode;
+							currNode->left = NodeList[i];
+						}
+					}
+				}
+			}
 		}
 		else if (direction == 3)
 		{
@@ -763,9 +861,23 @@ void GenerateNeighbourNode()
 				currNode->back->front = currNode; // sets the new node to have the current node as its corresponding neighbour
 				currNode->back->status = 0;
 			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x && NodeList[i]->y == currNode->y - 1)
+						{
+							NodeList[i]->front = currNode;
+							currNode->back = NodeList[i];
+						}
+					}
+				}
+			}
 		}
 	}
-	if (leftScannedLength < MINWALLLENGTH)//check if there is enough space to create a node
+	if (leftScannedLength < MINWALLLENGTH) // check if there is enough space to create a node
 	{
 		if (direction == 0)
 		{
@@ -796,6 +908,20 @@ void GenerateNeighbourNode()
 				currNode->left->right = currNode; // sets the new node to have the current node as its corresponding node side
 				currNode->left->status = 0;
 			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x - 1 && NodeList[i]->y == currNode->y)
+						{
+							NodeList[i]->right = currNode;
+							currNode->left = NodeList[i];
+						}
+					}
+				}
+			}
 		}
 		else if (direction == 1)
 		{
@@ -806,6 +932,20 @@ void GenerateNeighbourNode()
 				currNode->back = NodeList[currentUsedNode];
 				currNode->back->front = currNode; // sets the new node to have the current node as its corresponding node side
 				currNode->back->status = 0;
+			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x && NodeList[i]->y == currNode->y - 1)
+						{
+							NodeList[i]->front = currNode;
+							currNode->back = NodeList[i];
+						}
+					}
+				}
 			}
 		}
 		else if (direction == 2)
@@ -818,6 +958,20 @@ void GenerateNeighbourNode()
 				currNode->right->left = currNode; // sets the new node to have the current node as its corresponding node side
 				currNode->right->status = 0;
 			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x + 1 && NodeList[i]->y == currNode->y)
+						{
+							NodeList[i]->left = currNode;
+							currNode->right = NodeList[i];
+						}
+					}
+				}
+			}
 		}
 		else if (direction == 3)
 		{
@@ -829,11 +983,25 @@ void GenerateNeighbourNode()
 				currNode->front->back = currNode; // sets the new node to have the current node as its corresponding node side
 				currNode->front->status = 0;
 			}
+			else
+			{
+				for (int i; i < NUMOFNODESTODECLARE; i++)
+				{
+					if (NodeList[i] != NULL)
+					{
+						if (NodeList[i]->x == currNode->x && NodeList[i]->y == currNode->y + 1)
+						{
+							NodeList[i]->back = currNode;
+							currNode->front = NodeList[i];
+						}
+					}
+				}
+			}
 		}
 	}
 }
 
-//starts mapping sequence until there are no clear paths left
+// starts mapping sequence until there are no clear paths left
 void Map()
 {
 	InitMapping();
@@ -844,12 +1012,12 @@ void Map()
 		{
 			break;
 		}
-		Move(); 
+		Move();
 		GenerateNeighbourNode();
 	}
 }
 
-//goto the x and y node 
+// goto the x and y node
 void gotoNode(int zzx, int zzy)
 {
 	for (int i; i < NUMOFNODESTODECLARE; i++)

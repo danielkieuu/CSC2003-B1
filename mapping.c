@@ -1,16 +1,20 @@
 //#include "driverlib.h"
 
 /* Standard Includes */
+//#include "PID-PWM.h"
+
+// I COMMENTED OFF PID FUNCTIONS and ADDED ONE PRINTF LINE IN gotoNode FUNCTION
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "PID-PWM.h"
-#define NODELENGTH 15.0
-#define NUMOFNODESTODECLADE 30
-float frontScannedLength;
-float rightScannedLength;
-float leftScannedLength;
+#define MINWALLLENGTH 3.0
+#define NODELENGTH 25
+#define NUMOFNODESTODECLADE 30 // changed to 3 for test 2x2 grid, original is 30
+uint64_t frontScannedLength = 0;
+uint64_t rightScannedLength = 0;
+uint64_t leftScannedLength = 0;
 int direction = 0; // 0 = n, 1=w , 2=s, 3=e
 int currentUsedNode = 0;
 bool mappingCompleted = false;
@@ -93,7 +97,7 @@ struct List *removeList(struct List *head, struct Node *remove)
 	if (temp->child == remove)
 	{
 		head = temp->next;
-		free(temp);
+		// free(temp);
 		return head;
 	}
 	while (temp->next != NULL)
@@ -132,7 +136,7 @@ struct List *removeFrontList(struct List *head)
 	struct List *temp;
 	temp = head;
 	head = temp->next;
-	free(temp);
+	// free(temp);
 	return head;
 }
 
@@ -162,7 +166,7 @@ struct List *freeList(struct List *head)
 	temp2 = head;
 	while (temp != NULL)
 	{
-		free(temp);
+		// free(temp);
 		temp = temp2->next;
 		temp2 = temp2->next;
 	}
@@ -177,9 +181,19 @@ struct List *closedList; // nodes that we have "checked"
 struct List *openList;	 // neighbouring nodes that have yet to be "checked"
 struct List *pathList;
 
-float ScanFoward(){	printf("hello world");}
-float ScanLeft(){	printf("hello world");}
-float ScanRight(){	printf("hello world");}
+uint64_t ScanFoward()
+{
+	printf("hello world");
+	return 100;
+}
+uint64_t ScanLeft()
+{
+	printf("hello world");
+}
+uint64_t ScanRight()
+{
+	printf("hello world");
+}
 
 // void moveLeft(){	printf("hello world");}
 // void moveRight(){	printf("hello world");}
@@ -188,56 +202,58 @@ float ScanRight(){	printf("hello world");}
 
 // start of reagan
 void turnLeftMove()
-{	
-	float currScanLength =0;
-	turn_left(90);
-	frontScannedLength= ScanFoward();
+{
+	uint64_t currScanLength = 0;
+	// turn_left(90);
+	frontScannedLength = ScanFoward();
 	currScanLength = frontScannedLength;
-	move_forward();
-	while 	(frontScannedLength-currScanLength > NODELENGTH)
+	// move_forward();
+	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
 		currScanLength = ScanFoward();
 	}
-	stop_movement();
+	// stop_movement();
 }
 void moveForward()
-{	
-	float currScanLength =0;
-	frontScannedLength= ScanFoward();
+{
+	float currScanLength = 0;
+	frontScannedLength = ScanFoward();
 	currScanLength = frontScannedLength;
-	move_forward();
-	while 	(frontScannedLength-currScanLength > NODELENGTH)
+	// move_forward();
+	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
-		currScanLength = ScanFoward();
+		// currScanLength = ScanFoward();
+		currScanLength--;
 	}
-	stop_movement();
+	// stop_movement();
 }
 void turnRightMove()
 {
-	float currScanLength =0;
-	turn_right(90);
-	frontScannedLength= ScanFoward();
+	float currScanLength = 0;
+	// turn_right(90);
+	frontScannedLength = ScanFoward();
 	currScanLength = frontScannedLength;
-	move_forward();
-	while 	(frontScannedLength-currScanLength > NODELENGTH)
+	// move_forward();
+	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
-		currScanLength = ScanFoward();
+		// currScanLength = ScanFoward();
+		currScanLength--;
 	}
-	stop_movement();
+	// stop_movement();
 }
 void turn180Move()
-{	
-	float currScanLength =0;
-	turn_left(90);
-	turn_left(90);
-	frontScannedLength= ScanFoward();
+{
+	float currScanLength = 0;
+	// turn_left(90);
+	// turn_left(90);
+	frontScannedLength = ScanFoward();
 	currScanLength = frontScannedLength;
-	move_forward();
-	while 	(frontScannedLength-currScanLength > NODELENGTH)
+	// move_forward();
+	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
 		currScanLength = ScanFoward();
 	}
-	stop_movement();
+	// stop_movement();
 }
 
 void moveLeft()
@@ -311,28 +327,28 @@ void moveBack()
 		currNode = currNode->back;
 		turnRightMove(); // call pid to move car forward [true west] to south
 	}
-	direction =2;
+	direction = 2;
 }
 void moveFront()
 {
 	if (direction == 0)
 	{
-		currNode = currNode->back;
+		currNode = currNode->front;
 		moveForward(); // pid car move forward [true north] to north
 	}
 	if (direction == 1)
 	{
-		currNode = currNode->back;
+		currNode = currNode->front;
 		turnRightMove(); // pid turn car right and move forward [true west] to north
 	}
 	if (direction == 2)
 	{
-		currNode = currNode->back;
+		currNode = currNode->front;
 		turn180Move(); // pid turn car 180 and ove forward [true south] to north
 	}
 	if (direction == 3)
 	{
-		currNode = currNode->back;
+		currNode = currNode->front;
 		turnLeftMove(); // call pid to move car forward [true east] to north
 	}
 	direction = 0;
@@ -398,24 +414,36 @@ void Move() // its an astar/move function
 			currNode->right->parent = currNode;
 		}
 		//== == == == == == == == == == == == == == == == == == == ;
-
+		struct List *temp;
 		while (openList != NULL)
 		{
 			int f = 10000;
-			struct List *temp;
+
+			temp = openList;
+			while (temp != NULL)
+			{
+				if (temp->child->f < f)
+				{
+					pathfindingNode = temp->child;
+				}
+				temp = temp->next;
+			}
+
+			openList = removeList(openList, pathfindingNode); // add current selected lowest f to closed list
+			closedList = addList(closedList, pathfindingNode);
+
 			temp = closedList;
 			while (temp != NULL) // find current list lowest f
 			{
-
-				if (temp->child = goalNode)
+				if (temp->child == goalNode)
 				{
-					goalNode->parent = pathfindingNode;
+					// goalNode->parent = pathfindingNode;
 
-					addFrontList(pathList, goalNode);
-					addFrontList(pathList, pathfindingNode);
+					pathList = addFrontList(pathList, goalNode);
+					pathList = addFrontList(pathList, pathfindingNode);
 					while (pathfindingNode->parent != currNode)
 					{
-						addFrontList(pathList, pathfindingNode->parent);
+						pathList = addFrontList(pathList, pathfindingNode->parent);
 						pathfindingNode = pathfindingNode->parent;
 					}
 
@@ -424,42 +452,38 @@ void Move() // its an astar/move function
 						if (currNode->front == pathList->child)
 						{
 							moveFront();
+							pathList = pathList->next;
 						}
 						else if (currNode->left == pathList->child)
 						{
 							moveLeft();
+							pathList = pathList->next;
 						}
 						else if (currNode->right == pathList->child)
 						{
 							moveRight();
+							pathList = pathList->next;
 						}
 						else if (currNode->back == pathList->child)
 						{
 							moveBack();
+							pathList = pathList->next;
 						}
 						else
 						{
 							printf("im sorry idk how you ended up here the car is hentak kaki from this point onwards");
 						}
 					}
-					// return; // TODO: make path to move allong //DONE
-				}
-				if (temp->child->f < f)
-				{
-					pathfindingNode = temp->child;
+					goalNode->status = 1;
+					printf("\nSuc6ssfully navigated to Node \n"); // added this
+					return;										  // return; // TODO: make path to move allong //DONE
 				}
 				temp = temp->next;
 			}
-			openList = removeList(openList, pathfindingNode); // add current selected lowest f to closed list
-			closedList = addList(closedList, pathfindingNode);
+
 			if (pathfindingNode->front != NULL) // add left front front and back to the open list
 			{
-				if (existInList(closedList, pathfindingNode->front))
-				{
-					break;
-				}
-
-				if (!existInList(openList, pathfindingNode->front))
+				if (!existInList(closedList, pathfindingNode->front) && !existInList(openList, pathfindingNode->front))
 				{
 					openList = addList(openList, pathfindingNode->front);
 					pathfindingNode->front->parent = pathfindingNode;
@@ -479,12 +503,7 @@ void Move() // its an astar/move function
 			}
 			if (pathfindingNode->back != NULL) // add left back back and back to the open list
 			{
-				if (existInList(closedList, pathfindingNode->back))
-				{
-					break;
-				}
-
-				if (!existInList(openList, pathfindingNode->back))
+				if (!existInList(closedList, pathfindingNode->back) && !existInList(openList, pathfindingNode->back))
 				{
 					openList = addList(openList, pathfindingNode->back);
 					pathfindingNode->back->parent = pathfindingNode;
@@ -504,12 +523,7 @@ void Move() // its an astar/move function
 			}
 			if (pathfindingNode->left != NULL) // add left right front and back to the open list
 			{
-				if (existInList(closedList, pathfindingNode->left))
-				{
-					break;
-				}
-
-				if (!existInList(openList, pathfindingNode->left))
+				if (!existInList(closedList, pathfindingNode->left) && !existInList(openList, pathfindingNode->left))
 				{
 					openList = addList(openList, pathfindingNode->left);
 					pathfindingNode->left->parent = pathfindingNode;
@@ -529,12 +543,7 @@ void Move() // its an astar/move function
 			}
 			if (pathfindingNode->right != NULL) // add left right front and back to the open list
 			{
-				if (existInList(closedList, pathfindingNode->right))
-				{
-					break;
-				}
-
-				if (!existInList(openList, pathfindingNode->right))
+				if (!existInList(closedList, pathfindingNode->right) && !existInList(openList, pathfindingNode->right))
 				{
 					openList = addList(openList, pathfindingNode->right);
 					pathfindingNode->right->parent = pathfindingNode;
@@ -553,9 +562,61 @@ void Move() // its an astar/move function
 				}
 			}
 		}
+
+		// temp = closedList;
+		// while (temp != NULL) // find current list lowest f
+		// {
+		// 	if (temp->child == goalNode)
+		// 	{
+		// 		goalNode->parent = pathfindingNode;
+
+		// 		addFrontList(pathList, goalNode);
+		// 		addFrontList(pathList, pathfindingNode);
+		// 		while (pathfindingNode->parent != currNode)
+		// 		{
+		// 			pathList = addFrontList(pathList, pathfindingNode->parent);
+		// 			pathfindingNode = pathfindingNode->parent;
+		// 		}
+
+		// 		while (currNode != goalNode)
+		// 		{
+		// 			if (currNode->front == pathList->child)
+		// 			{
+		// 				moveFront();
+		// 				pathList = pathList->next;
+		// 			}
+		// 			else if (currNode->left == pathList->child)
+		// 			{
+		// 				moveLeft();
+		// 				pathList = pathList->next;
+		// 			}
+		// 			else if (currNode->right == pathList->child)
+		// 			{
+		// 				moveRight();
+		// 				pathList = pathList->next;
+		// 			}
+		// 			else if (currNode->back == pathList->child)
+		// 			{
+		// 				moveBack();
+		// 				pathList = pathList->next;
+		// 			}
+		// 			else
+		// 			{
+		// 				printf("im sorry idk how you ended up here the car is hentak kaki from this point onwards");
+		// 			}
+		// 		}
+		// 		goalNode->status = 1;
+		// 		printf("\nSuccessfully navigated to Node \n"); // added this
+		// 		return;										   // return; // TODO: make path to move allong //DONE
+		// 	}
+		// 	// if (temp->child->f < f)
+		// 	// {
+		// 	// 	pathfindingNode = temp->child;
+		// 	// }
+		// 	temp = temp->next;
+		// }
 	}
 }
-
 
 void InitMapping() // generate neighbouring nodes around car currently
 {
@@ -567,6 +628,7 @@ void InitMapping() // generate neighbouring nodes around car currently
 		/_/____|___\
 	   /_/_____|____\    */
 
+	NodeList[0] = createnode();
 	currNode = NodeList[0];
 	currNode->status = 1;
 	currNode->x = 0;
@@ -628,30 +690,50 @@ void FindNode()
 {
 	for (size_t i = 0; i < NUMOFNODESTODECLADE; i++)
 	{
-		if (NodeList[i]->front != NULL)
+		if (NodeList[i] != NULL)
 		{
-			goalNode = NodeList[i];
-			targetx = NodeList[i]->x;
-			targety = NodeList[i]->y;
-			return;
+			if (NodeList[i]->status == 0)
+			{
+				goalNode = NodeList[i];
+				targetx = NodeList[i]->x;
+				targety = NodeList[i]->y;
+				return;
+			}
+			// if (NodeList[i]->front != NULL)
+			// {
+			// 	if (NodeList[i]->front->status == 0)
+			// 	{
+			// 		goalNode = NodeList[i];
+			// 		targetx = NodeList[i]->x;
+			// 		targety = NodeList[i]->y;
+			// 		return;
+			// 	}
+			// }
+			// if (NodeList[i]->left != NULL)
+			// {
+			// 	if (NodeList[i]->left->status == 0)
+			// 	{
+			// 		goalNode = NodeList[i];
+			// 		targetx = NodeList[i]->x;
+			// 		targety = NodeList[i]->y;
+			// 		return;
+			// 	}
+			// }
+			// if (NodeList[i]->right != NULL)
+			// {
+			// 	if (NodeList[i]->right->status == 0)
+			// 	{
+
+			// 		goalNode = NodeList[i];
+			// 		targetx = NodeList[i]->x;
+			// 		targety = NodeList[i]->y;
+			// 		return;
+			// 	}
+			// }
 		}
-		if (NodeList[i]->left != NULL)
-		{
-			goalNode = NodeList[i];
-			targetx = NodeList[i]->x;
-			targety = NodeList[i]->y;
-			return;
-		}
-		if (NodeList[i]->right != NULL)
-		{
-			goalNode = NodeList[i];
-			targetx = NodeList[i]->x;
-			targety = NodeList[i]->y;
-			return;
-		}
-		if (i == NUMOFNODESTODECLADE)
-			mappingCompleted = true;
 	}
+	// if (i == NUMOFNODESTODECLADE)
+	mappingCompleted = true;
 }
 
 void GenerateNeighbourNode()
@@ -660,7 +742,7 @@ void GenerateNeighbourNode()
 	rightScannedLength = ScanRight();
 	leftScannedLength = ScanLeft();
 
-	if (frontScannedLength < NODELENGTH)
+	if (frontScannedLength < MINWALLLENGTH)
 	{
 		if (direction == 0)
 		{
@@ -726,7 +808,7 @@ void GenerateNeighbourNode()
 			}
 		}
 	}
-	if (rightScannedLength < NODELENGTH)
+	if (rightScannedLength < MINWALLLENGTH)
 	{
 		if (direction == 0)
 		{
@@ -792,7 +874,7 @@ void GenerateNeighbourNode()
 			}
 		}
 	}
-	if (leftScannedLength < NODELENGTH)
+	if (leftScannedLength < MINWALLLENGTH)
 	{
 		if (direction == 0)
 		{
@@ -865,6 +947,10 @@ void Map()
 	while (!mappingCompleted)
 	{
 		FindNode();
+		if (mappingCompleted)
+		{
+			break;
+		}
 		Move(); // TODO: MAP AFTER MOVE //done
 		GenerateNeighbourNode();
 	}
@@ -873,7 +959,7 @@ void Map()
 void gotoNode(int zzx, int zzy)
 {
 	struct Node *zzNode;
-	
+
 	for (int i; i < NUMOFNODESTODECLADE; i++)
 	{
 		if (NodeList[i] != NULL)
@@ -889,6 +975,72 @@ void gotoNode(int zzx, int zzy)
 	}
 	Move();
 }
-int main() {
-	printf("hello world");
+
+int main()
+{
+
+	// struct Node *temp = createnode();
+
+	int i, input1, input2;
+	input1 = 1;
+	input2 = 0;
+	for (i = 0; i < 4; i++)
+	{
+
+		NodeList[i] = createnode();
+	}
+
+	// NodeList[0] = temp;
+	NodeList[0]->x = 0;
+	NodeList[0]->y = 0;
+	NodeList[0]->status = 1;
+
+	NodeList[0]->front = NodeList[1];
+	NodeList[1]->back = NodeList[0];
+	NodeList[1]->x = 0;
+	NodeList[1]->y = 1;
+	NodeList[1]->status = 0;
+
+	NodeList[1]->right = NodeList[2];
+	NodeList[2]->left = NodeList[1];
+	NodeList[2]->x = 1;
+	NodeList[2]->y = 1;
+	NodeList[2]->status = 0;
+
+	NodeList[2]->back = NodeList[3];
+	NodeList[3]->front = NodeList[2];
+	NodeList[3]->x = 1;
+	NodeList[3]->y = 0;
+	NodeList[3]->status = 0;
+
+	printf("Choose your destination:\n\nYou are at Node 0 (0,0)\n\nNode 1 (0,1) Node 2 (1,1)\nNode 0 (0,0) Node 3 (1,0)");
+	printf("\n\nEnter the end coordinate: \n");
+	// scanf("%d", &input1);
+	// scanf("%d", &input2);
+
+	printf("\nYour end coordinate entered is: %d, %d\n", input1, input2);
+
+	// hard-coded error message
+	if (input1 < 0 || input1 > 1 || input2 < 0 || input2 > 1)
+	{
+		printf("\nRhydon deez nuts");
+	}
+
+	currNode = NodeList[0];
+
+	// FindNode();
+	// Move();
+
+	// gotoNode(input1, input2);
+
+	while (!mappingCompleted)
+	{
+		FindNode();
+		if (mappingCompleted)
+		{
+			break;
+		}
+		Move(); // TODO: MAP AFTER MOVE //done
+				// GenerateNeighbourNode();
+	}
 }

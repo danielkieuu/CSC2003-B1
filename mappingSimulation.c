@@ -926,6 +926,8 @@ int main()
 	int i, input1, input2, curX, curY;
 	input1 = 0;
 	input2 = 0;
+	curX= 0;
+	curY = 0;
 
 	for (i = 0; i < 9; i++)
 	{

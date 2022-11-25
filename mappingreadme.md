@@ -38,7 +38,9 @@ Our final implementation of the code uses an A* algorithm with heuristics being 
 In an effort to save on processing power the `(heurestic * 10)` was removed from the manhattan method.
 We have chosen A* to find the shortest path to our goal node in an attempt to reduce the amount of time needed for traveling and mapping out the entire maze. 
 
+Nodes are not generated at compile time to save on memory.
 The node generation of the map is fully dynamic and can be scaled up by changing the variable `NUMOFNODESTODECLARE` to increase the array to store the dynamically generated nodes. 
+
 
 ## Memory Used
 

@@ -4,12 +4,12 @@
 //#include "PID-PWM.h"
 
 // I COMMENTED OFF PID FUNCTIONS and ADDED ONE PRINTF LINE IN gotoNode FUNCTION
-
+#include "ultrasonic/ultrasonic/ultrasonic.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define MINWALLLENGTH 3.0
+#define MINWALLLENGTH 10.0
 #define NODELENGTH 25
 #define NUMOFNODESTODECLADE 30 // changed to 3 for test 2x2 grid, original is 30
 uint64_t frontScannedLength = 0;
@@ -183,16 +183,18 @@ struct List *pathList;
 
 uint64_t ScanFoward()
 {
-	printf("hello world");
-	return 100;
+	// printf("hello world");
+	return scanForward();
 }
 uint64_t ScanLeft()
 {
-	printf("hello world");
+	// printf("hello world");
+	return scanLeft();
 }
 uint64_t ScanRight()
 {
-	printf("hello world");
+	// printf("hello world");
+	return scanRight();
 }
 
 // void moveLeft(){	printf("hello world");}
@@ -204,56 +206,56 @@ uint64_t ScanRight()
 void turnLeftMove()
 {
 	uint64_t currScanLength = 0;
-	// turn_left(90);
+	turn_left(90);
 	frontScannedLength = ScanFoward();
 	currScanLength = frontScannedLength;
-	// move_forward();
+	move_forward();
 	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
 		currScanLength = ScanFoward();
 	}
-	// stop_movement();
+	stop_movement();
 }
 void moveForward()
 {
 	float currScanLength = 0;
 	frontScannedLength = ScanFoward();
 	currScanLength = frontScannedLength;
-	// move_forward();
+	move_forward();
 	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
-		// currScanLength = ScanFoward();
-		currScanLength--;
+		currScanLength = ScanFoward();
+		// currScanLength--;
 	}
-	// stop_movement();
+	stop_movement();
 }
 void turnRightMove()
 {
 	float currScanLength = 0;
-	// turn_right(90);
+	turn_right(90);
 	frontScannedLength = ScanFoward();
 	currScanLength = frontScannedLength;
-	// move_forward();
+	move_forward();
 	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
-		// currScanLength = ScanFoward();
-		currScanLength--;
+		currScanLength = ScanFoward();
+		// currScanLength--;
 	}
-	// stop_movement();
+	stop_movement();
 }
 void turn180Move()
 {
 	float currScanLength = 0;
-	// turn_left(90);
-	// turn_left(90);
+	turn_left(90);
+	turn_left(90);
 	frontScannedLength = ScanFoward();
 	currScanLength = frontScannedLength;
-	// move_forward();
+	move_forward();
 	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
 		currScanLength = ScanFoward();
 	}
-	// stop_movement();
+	stop_movement();
 }
 
 void moveLeft()
@@ -979,68 +981,68 @@ void gotoNode(int zzx, int zzy)
 int main()
 {
 
-	// struct Node *temp = createnode();
+	// // struct Node *temp = createnode();
 
-	int i, input1, input2;
-	input1 = 1;
-	input2 = 0;
-	for (i = 0; i < 4; i++)
-	{
+	// int i, input1, input2;
+	// input1 = 1;
+	// input2 = 0;
+	// for (i = 0; i < 4; i++)
+	// {
 
-		NodeList[i] = createnode();
-	}
+	// 	NodeList[i] = createnode();
+	// }
 
-	// NodeList[0] = temp;
-	NodeList[0]->x = 0;
-	NodeList[0]->y = 0;
-	NodeList[0]->status = 1;
+	// // NodeList[0] = temp;
+	// NodeList[0]->x = 0;
+	// NodeList[0]->y = 0;
+	// NodeList[0]->status = 1;
 
-	NodeList[0]->front = NodeList[1];
-	NodeList[1]->back = NodeList[0];
-	NodeList[1]->x = 0;
-	NodeList[1]->y = 1;
-	NodeList[1]->status = 0;
+	// NodeList[0]->front = NodeList[1];
+	// NodeList[1]->back = NodeList[0];
+	// NodeList[1]->x = 0;
+	// NodeList[1]->y = 1;
+	// NodeList[1]->status = 0;
 
-	NodeList[1]->right = NodeList[2];
-	NodeList[2]->left = NodeList[1];
-	NodeList[2]->x = 1;
-	NodeList[2]->y = 1;
-	NodeList[2]->status = 0;
+	// NodeList[1]->right = NodeList[2];
+	// NodeList[2]->left = NodeList[1];
+	// NodeList[2]->x = 1;
+	// NodeList[2]->y = 1;
+	// NodeList[2]->status = 0;
 
-	NodeList[2]->back = NodeList[3];
-	NodeList[3]->front = NodeList[2];
-	NodeList[3]->x = 1;
-	NodeList[3]->y = 0;
-	NodeList[3]->status = 0;
+	// NodeList[2]->back = NodeList[3];
+	// NodeList[3]->front = NodeList[2];
+	// NodeList[3]->x = 1;
+	// NodeList[3]->y = 0;
+	// NodeList[3]->status = 0;
 
-	printf("Choose your destination:\n\nYou are at Node 0 (0,0)\n\nNode 1 (0,1) Node 2 (1,1)\nNode 0 (0,0) Node 3 (1,0)");
-	printf("\n\nEnter the end coordinate: \n");
-	// scanf("%d", &input1);
-	// scanf("%d", &input2);
+	// printf("Choose your destination:\n\nYou are at Node 0 (0,0)\n\nNode 1 (0,1) Node 2 (1,1)\nNode 0 (0,0) Node 3 (1,0)");
+	// printf("\n\nEnter the end coordinate: \n");
+	// // scanf("%d", &input1);
+	// // scanf("%d", &input2);
 
-	printf("\nYour end coordinate entered is: %d, %d\n", input1, input2);
+	// printf("\nYour end coordinate entered is: %d, %d\n", input1, input2);
 
-	// hard-coded error message
-	if (input1 < 0 || input1 > 1 || input2 < 0 || input2 > 1)
-	{
-		printf("\nRhydon deez nuts");
-	}
+	// // hard-coded error message
+	// if (input1 < 0 || input1 > 1 || input2 < 0 || input2 > 1)
+	// {
+	// 	printf("\nRhydon deez nuts");
+	// }
 
-	currNode = NodeList[0];
+	// currNode = NodeList[0];
 
-	// FindNode();
-	// Move();
+	// // FindNode();
+	// // Move();
 
-	// gotoNode(input1, input2);
+	// // gotoNode(input1, input2);
 
-	while (!mappingCompleted)
-	{
-		FindNode();
-		if (mappingCompleted)
-		{
-			break;
-		}
-		Move(); // TODO: MAP AFTER MOVE //done
-				// GenerateNeighbourNode();
-	}
+	// while (!mappingCompleted)
+	// {
+	// 	FindNode();
+	// 	if (mappingCompleted)
+	// 	{
+	// 		break;
+	// 	}
+	// 	Move(); // TODO: MAP AFTER MOVE //done
+	// 			// GenerateNeighbourNode();
+	// }
 }

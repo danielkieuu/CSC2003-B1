@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #define MINWALLLENGTH 10.0
 #define NODELENGTH 25
-#define NUMOFNODESTODECLADE 30 // changed to 3 for test 2x2 grid, original is 30
+#define NUMOFNODESTODECLARE 30 // changed to 3 for test 2x2 grid, original is 30
 uint64_t frontScannedLength = 0;
 uint64_t rightScannedLength = 0;
 uint64_t leftScannedLength = 0;
@@ -172,16 +172,16 @@ struct List *freeList(struct List *head)
 	}
 }
 
-struct Node *NodeList[NUMOFNODESTODECLADE];
-struct Node *currNode;
-struct Node *pathfindingNode;
-struct Node *goalNode;
+struct Node *NodeList[NUMOFNODESTODECLARE]; //declare pointers for the map to use
+struct Node *currNode; //current node the car is at
+struct Node *pathfindingNode;	//current node being checked by A*
+struct Node *goalNode; //end goal for A*
 
 struct List *closedList; // nodes that we have "checked"
 struct List *openList;	 // neighbouring nodes that have yet to be "checked"
-struct List *pathList;
+struct List *pathList; //path for the car to follow to the found node
 
-uint64_t ScanFoward()
+uint64_t ScanForward()
 {
 	// printf("hello world");
 	return scanForward();
@@ -207,24 +207,24 @@ void turnLeftMove()
 {
 	uint64_t currScanLength = 0;
 	turn_left(90);
-	frontScannedLength = ScanFoward();
+	frontScannedLength = ScanForward();
 	currScanLength = frontScannedLength;
 	move_forward();
 	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
-		currScanLength = ScanFoward();
+		currScanLength = ScanForward();
 	}
 	stop_movement();
 }
 void moveForward()
 {
 	float currScanLength = 0;
-	frontScannedLength = ScanFoward();
+	frontScannedLength = ScanForward();
 	currScanLength = frontScannedLength;
 	move_forward();
 	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
-		currScanLength = ScanFoward();
+		currScanLength = ScanForward();
 		// currScanLength--;
 	}
 	stop_movement();
@@ -233,12 +233,12 @@ void turnRightMove()
 {
 	float currScanLength = 0;
 	turn_right(90);
-	frontScannedLength = ScanFoward();
+	frontScannedLength = ScanForward();
 	currScanLength = frontScannedLength;
 	move_forward();
 	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
-		currScanLength = ScanFoward();
+		currScanLength = ScanForward();
 		// currScanLength--;
 	}
 	stop_movement();
@@ -248,12 +248,12 @@ void turn180Move()
 	float currScanLength = 0;
 	turn_left(90);
 	turn_left(90);
-	frontScannedLength = ScanFoward();
+	frontScannedLength = ScanForward();
 	currScanLength = frontScannedLength;
 	move_forward();
 	while ((frontScannedLength - currScanLength) < NODELENGTH)
 	{
-		currScanLength = ScanFoward();
+		currScanLength = ScanForward();
 	}
 	stop_movement();
 }
@@ -358,7 +358,7 @@ void moveFront()
 
 bool NodeInNodeList(int x, int y)
 {
-	for (int i; i < NUMOFNODESTODECLADE; i++)
+	for (int i; i < NUMOFNODESTODECLARE; i++)
 	{
 		if (NodeList[i] != NULL)
 		{
@@ -374,7 +374,6 @@ bool NodeInNodeList(int x, int y)
 
 void Move() // its an astar/move function
 {
-	// issue how to find the path to move to the empty node
 	if (true)
 	{
 		pathfindingNode = currNode;
@@ -383,7 +382,7 @@ void Move() // its an astar/move function
 		closedList = NULL;
 		openList = NULL;
 		closedList = addList(closedList, currNode);
-		if (currNode->front != NULL) // setup openlist
+		if (currNode->front != NULL) 
 		{
 			openList = addList(openList, currNode->front);
 			currNode->front->g = 1;
@@ -415,14 +414,13 @@ void Move() // its an astar/move function
 			currNode->right->f = currNode->right->g + currNode->right->h;
 			currNode->right->parent = currNode;
 		}
-		//== == == == == == == == == == == == == == == == == == == ;
 		struct List *temp;
 		while (openList != NULL)
 		{
 			int f = 10000;
 
 			temp = openList;
-			while (temp != NULL)
+			while (temp != NULL)// find lowest f value
 			{
 				if (temp->child->f < f)
 				{
@@ -435,7 +433,7 @@ void Move() // its an astar/move function
 			closedList = addList(closedList, pathfindingNode);
 
 			temp = closedList;
-			while (temp != NULL) // find current list lowest f
+			while (temp != NULL) 
 			{
 				if (temp->child == goalNode)
 				{
@@ -636,7 +634,7 @@ void InitMapping() // generate neighbouring nodes around car currently
 	currNode->x = 0;
 	currNode->y = 0;
 
-	frontScannedLength = ScanFoward();
+	frontScannedLength = ScanForward();
 	rightScannedLength = ScanRight();
 	leftScannedLength = ScanLeft();
 	currNode->back = NULL;
@@ -690,7 +688,7 @@ void InitMapping() // generate neighbouring nodes around car currently
 // finds any unvisited nodes
 void FindNode()
 {
-	for (size_t i = 0; i < NUMOFNODESTODECLADE; i++)
+	for (size_t i = 0; i < NUMOFNODESTODECLARE; i++)
 	{
 		if (NodeList[i] != NULL)
 		{
@@ -734,13 +732,13 @@ void FindNode()
 			// }
 		}
 	}
-	// if (i == NUMOFNODESTODECLADE)
+	// if (i == NUMOFNODESTODECLARE)
 	mappingCompleted = true;
 }
 
 void GenerateNeighbourNode()
 {
-	frontScannedLength = ScanFoward();
+	frontScannedLength = ScanForward();
 	rightScannedLength = ScanRight();
 	leftScannedLength = ScanLeft();
 
@@ -962,7 +960,7 @@ void gotoNode(int zzx, int zzy)
 {
 	struct Node *zzNode;
 
-	for (int i; i < NUMOFNODESTODECLADE; i++)
+	for (int i; i < NUMOFNODESTODECLARE; i++)
 	{
 		if (NodeList[i] != NULL)
 		{

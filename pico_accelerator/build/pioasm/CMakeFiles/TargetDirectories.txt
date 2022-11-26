@@ -1,0 +1,3 @@
+D:/Desktop/pico_accelerator/build/pioasm/CMakeFiles/pioasm.dir
+D:/Desktop/pico_accelerator/build/pioasm/CMakeFiles/edit_cache.dir
+D:/Desktop/pico_accelerator/build/pioasm/CMakeFiles/rebuild_cache.dir

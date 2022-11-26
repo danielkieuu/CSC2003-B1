@@ -1,0 +1,37 @@
+The system is: Windows - 10.0.19044 - AMD64
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.34.31933/bin/Hostx86/x86/cl.exe 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+Microsoft (R) C/C++ Optimizing Compiler Version 19.34.31933 for x86
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+CMakeCXXCompilerId.cpp
+Microsoft (R) Incremental Linker Version 14.34.31933.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+/out:CMakeCXXCompilerId.exe 
+CMakeCXXCompilerId.obj 
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.exe"
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.obj"
+
+The CXX compiler identification is MSVC, found in "D:/Desktop/pico_accelerator/build/pioasm/CMakeFiles/3.25.0/CompilerIdCXX/CMakeCXXCompilerId.exe"
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: D:/Desktop/pico_accelerator/build/pioasm/CMakeFiles/CMakeScratch/TryCompile-cgfe5m
+
+Run Build Command(s):nmake -f Makefile /nologo cmTC_ea2ff\fast && 	"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.34.31933\bin\HostX86\x86\nmake.exe"  -f CMakeFiles\cmTC_ea2ff.dir\build.make /nologo -L                  CMakeFiles\cmTC_ea2ff.dir\build
+Building CXX object CMakeFiles/cmTC_ea2ff.dir/CMakeCXXCompilerABI.cpp.obj
+	D:\cmake\bin\cmake.exe -E cmake_cl_compile_depends --dep-file=CMakeFiles\cmTC_ea2ff.dir\CMakeCXXCompilerABI.cpp.obj.d --working-dir=D:\Desktop\pico_accelerator\build\pioasm\CMakeFiles\CMakeScratch\TryCompile-cgfe5m --filter-prefix="Note: including file: " -- C:\PROGRA~1\MICROS~4\2022\COMMUN~1\VC\Tools\MSVC\1434~1.319\bin\Hostx86\x86\cl.exe @C:\Users\quanx\AppData\Local\Temp\nm2EA8.tmp
+CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTC_ea2ff.exe
+	D:\cmake\bin\cmake.exe -E vs_link_exe --intdir=CMakeFiles\cmTC_ea2ff.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100220~1.0\x86\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100220~1.0\x86\mt.exe --manifests -- C:\PROGRA~1\MICROS~4\2022\COMMUN~1\VC\Tools\MSVC\1434~1.319\bin\Hostx86\x86\link.exe /nologo @CMakeFiles\cmTC_ea2ff.dir\objects1 @C:\Users\quanx\AppData\Local\Temp\nm2F26.tmp
+
+
+

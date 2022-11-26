@@ -31,3 +31,22 @@ Team B1 of CSC2003 Embedded Systems
 | James Nicolas Tan | 2101209    | Infrared        |
 | Jaden Edwin Chua  | 1802965    | Infrared        |
 
+## GPIO Pins
+
+| Pin Number | Usage                 |
+| ---------- | --------------------- |
+| GPIO 0     | UART TX               |
+| GPIO 1     | UART RX               |
+| GPIO 10    | Ultrasonic Front Trig |
+| GPIO 11    | Ultrasonic Front Echo |
+| GPIO 12    | Ultrasonic Left Trig  |
+| GPIO 13    | Ultrasonic Left Echo  |
+| GPIO 14    | Ultrasonic Right Trig |
+| GPIO 15    | Ultrasonic Right Echo |
+| GPIO 16    | ENA                   |
+| GPIO 17    | ENB                   |
+| GPIO 18    | IN4                   |
+| GPIO 19    | IN3                   |
+| GPIO 20    | IN2                   |
+| GPIO 21    | IN1                   |
+| GPIO 28    | Barcode IR            |

@@ -8,7 +8,7 @@ Team B1 of CSC2003 Embedded Systems
 
 
 ## Members
-| ----------------- | ---------- | --------------- |
+
 | Name              | Student ID | Module          |
 | ----------------- | ---------- | --------------- |
 | Yi Lin Tay        | 2103154    | Communications  |
@@ -30,4 +30,4 @@ Team B1 of CSC2003 Embedded Systems
 | Aloysius Loo      | 2101162    | Infrared        |
 | James Nicolas Tan | 2101209    | Infrared        |
 | Jaden Edwin Chua  | 1802965    | Infrared        |
-| ----------------- | ---------- | ----------------|
+

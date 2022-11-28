@@ -22,7 +22,7 @@ Team B1 of CSC2003 Embedded Systems
 | Ng Chao Hong      | 2100997    | Mapping         |
 | Toh Zheng Xiang   | 2101089    | Ultrasonic      |
 | Daniel Kieu       | 2101231    | Ultrasonic      |
-| Ang Quan Xing     | 2101536    | Ultrasonic      |
+| Ang Quan Xing     | 2101536    | Accelerometer   |
 | Aloysius Loo      | 2101162    | Infrared        |
 | James Nicolas Tan | 2101209    | Infrared        |
 | Jaden Edwin Chua  | 1802965    | Infrared        |

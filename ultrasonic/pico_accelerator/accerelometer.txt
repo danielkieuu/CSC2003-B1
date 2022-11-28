@@ -115,47 +115,6 @@ class KalmanCalculator():
             self._roll = self._compl_angle_x
             return self._roll, self._pitch  # Return the x and y angles
 
-    def run(self):
-        """Overridden method of the Thread class. Run the thread using .start()"""
-        self.measure_until_interrupted()
-
-    def measure_until_interrupted(self, interval=None, log_output=False):
-        """
-        Continuously measure the angle recorded by the accelerometer. This will only be stopped once self.interrupt is
-        set to True.
-
-        :param interval: Time in between measurements. Defaults to MEASUREMENT_INTERVAL
-        :param log_output: Whether the output should be logged (it is recommended to set a higher interval when using
-        this feature). Defaults to False.
-        """
-        if interval is None:
-            interval = self.MEASUREMENT_INTERVAL
-
-        acc_data = self.mpu.get_accel_data()
-        acc_x = acc_data['x']
-        acc_y = acc_data['y']
-        acc_z = acc_data['z']
-
-        angle_x = rad2deg(atan2(acc_y, acc_z))
-        angle_y = rad2deg(atan(-acc_x / sqrt((acc_y ** 2) + (acc_z ** 2))))
-
-        self._kalman_x.setAngle(angle_x)
-        self._kalman_y.setAngle(angle_y)
-        self._gyro_angle_x = angle_x
-        self._gyro_angle_y = angle_y
-        self._compl_angle_x = angle_x
-        self._compl_angle_y = angle_y
-
-        self._timer = time.time()
-
-        while self.interrupted is False:  # Measure forever until the self.interrupted flag is set to True
-            roll, pitch = self.measure_angle()
-            if log_output is True:
-                print('roll (x): %0.1f, pitch (y): %0.1f' % (roll, pitch))
-            time.sleep(interval)
-
-    
-
 
 class KalmanAngle:
 
@@ -231,13 +190,6 @@ class KalmanAngle:
         return self.RMeasure
 
 
-last_read_time = 0.0   
-# These are the filtered angles
-last_x_angle = 0.0          
-last_y_angle = 0.0
-last_z_angle = 0.0
-
-
 def acc_angle(Ax, Ay, Az):
     radToDeg = 180/3.14159
     ax_angle = math.atan(Ay/math.sqrt(math.pow(Ax,2) + math.pow(Az, 2)))*radToDeg
@@ -263,22 +215,12 @@ def k_filtered_angle(ax_angle, ay_angle, Gx, Gy, dt):
     k_angle_y = kalmanY.getAngle(ay_angle, Gy, dt)
     return (k_angle_x, k_angle_y)
     
-def read_values_helper():
 
-    #Read Accelerometer raw value
-    acc_x = read_raw_data(ACCEL_XOUT_H)
-    acc_y = read_raw_data(ACCEL_YOUT_H)
-    acc_z = read_raw_data(ACCEL_ZOUT_H)
-    
-    #Read Gyroscope raw value
-    gyro_x = read_raw_data(GYRO_XOUT_H)
-    gyro_y = read_raw_data(GYRO_YOUT_H)
-    gyro_z = read_raw_data(GYRO_ZOUT_H)
-
-    #Read Temp raw value
-    temp = read_raw_data(TEMP_OUT_H)
-
-    return (acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z)
+last_read_time = 0.0   
+# These are the filtered angles
+last_x_angle = 0.0          
+last_y_angle = 0.0
+last_z_angle = 0.0
 
 def get_last_time(): 
     return last_read_time
@@ -325,6 +267,8 @@ while True:
 
   t_now = time.ticks_ms()
   dt = (t_now - get_last_time())/1000.0
+  
+  # Format the sensor value
 
   #accerelometer x y z axis 
   Ax = imu0.acceleration[0]/16384.0
@@ -340,16 +284,17 @@ while True:
   (c_angle_x, c_angle_y) = c_filtered_angle(acc_angles[0], acc_angles[1], gyr_angles[0], gyr_angles[1]) # filtered tilt angle i.e. what we're after
   (k_angle_x, k_angle_y) = k_filtered_angle(acc_angles[0], acc_angles[1], Gx, Gy, dt)
   
-  print((str('cx angle') + str((c_angle_x))))
-  print((str('cy angle') + str((c_angle_y))))
-  print((str('kx angle') + str((k_angle_x))))
-  print((str('ky angle') + str((k_angle_y))))
+  print( ( str('cx angle') + str(round(c_angle_x, 2)))    )
+  print((str('cy angle') + str(round(c_angle_y, 2))))
+  print((str('kx angle') + str(round(k_angle_x, 2))))
+  print((str('ky angle') + str( round(k_angle_y, 2) ) )   )
   
-  label0.setText(str('cx') + str((c_angle_x)))
-  label1.setText(str('cy') + str((c_angle_y)))
-  label2.setText(str('kx') + str((k_angle_x)))
-  label3.setText(str('ky') + str((k_angle_y)))
-  uart1.write(str(k_angle_y))
+
+  label0.setText(( str('cx') + str(round(c_angle_x, 2)))        )
+  label1.setText(( str('cy') + str(round(c_angle_y, 2)))        )
+  label2.setText(( str('kx') + str(round(k_angle_x, 2)))        )
+  label3.setText(( str('ky') + str(round(k_angle_y, 2))   )        )
+  uart1.write(str(round(k_angle_y, 2))  )
 
   if uart1.any():
     kalman_angle_y = (uart1.readline()).decode()

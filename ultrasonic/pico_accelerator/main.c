@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "hardware/uart.h"
 #include "pico/stdlib.h"
 
@@ -11,8 +13,16 @@
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 
+static const double Q_angle = 0.001, Q_gyro = 0.003, R_angle = 0.5, dtt = 0.005, C_0 = 1;
+double P[2][2] = {{1, 0}, {0, 1}};
+double Pdot[4] = {0, 0, 0, 0};
+double q_bias, angle_err, PCt_0, PCt_1, E, K_0, K_1, t_0, t_1;
+bool flag = false;
+
 // TODO : GET SPEED, HUMP HEIGHT, DISTANCE, BARCODE DATA
 volatile uint8_t count = 0;
+float angleX, angleY, angleZ;
+
 bool repeating_timer_callback(struct repeating_timer *t)
 {
     char text[16];
@@ -28,17 +38,63 @@ bool repeating_timer_callback(struct repeating_timer *t)
     return true;
 }
 
+// Kalman filter algo
+double Kalman_Filter(double angle_m, double gyro_m)
+{
+    // Step 1
+    angleX += (gyro_m - q_bias) * dtt;
+
+    // Step 2:
+    Pdot[0] = Q_angle - P[0][1] - P[1][0];
+    Pdot[1] = -P[1][1];
+    Pdot[2] = -P[1][1];
+    Pdot[3] = Q_gyro;
+    P[0][0] += Pdot[0] * dtt;
+    P[0][1] += Pdot[1] * dtt;
+    P[1][0] += Pdot[2] * dtt;
+    P[1][1] += Pdot[3] * dtt;
+    angle_err = angle_m - angleX;
+    PCt_0 = C_0 * P[0][0];
+    PCt_1 = C_0 * P[1][0];
+    E = R_angle + C_0 * PCt_0;
+    K_0 = PCt_0 / E;
+    K_1 = PCt_1 / E;
+    t_0 = PCt_0;
+    t_1 = C_0 * P[0][1];
+    P[0][0] -= K_0 * t_0;
+    P[0][1] -= K_0 * t_1;
+    P[1][0] -= K_1 * t_0;
+    P[1][1] -= K_1 * t_1;
+    angleX += K_0 * angle_err;
+    q_bias += K_1 * angle_err;
+    return angleX;
+}
+
+bool detectAngleOfElevation(double angle)
+{
+    if (angle > 28)
+    {
+        flag = true;
+    }
+    return flag;
+}
+
 // RX interrupt handler
 void on_uart_rx()
 {
     // print on m5 console
-    uart_puts(UART_ID, "A");
+    char buffer[50];
+    int a = 10, b = 20, c;
+    c = a + b;
+    sprintf(buffer, "Sum of %d and %d is %d", a, b, c);
+    uart_puts(UART_ID, buffer);
     // negative flag
     uint8_t flagNegative = 0;
 
     // Declare variables
     int8_t x = -6;
     int8_t y = -6;
+    double kalmanAngle;
 
     while (uart_is_readable(UART_ID))
     {
@@ -104,6 +160,29 @@ void on_uart_rx()
             x = -6;
             y = -6;
         }
+
+        // Form 4 byte to float
+        if (x != -6 && y != -6)
+        {
+            // TODO: Use this
+            // gotoNode(int x, int y)
+
+            char text[6];
+            sprintf(text, "%d,%d %d %d\n", x, y);
+            kalmanAngle = atof(text);
+
+            if (detectAngleOfElevation(kalmanAngle))
+            {
+                // call PID function to speed up
+            }
+
+            // kalmanAngle = Kalman_Filter(kalmanAngle);
+
+            // print back in serail console
+            uart_puts(UART_ID, text);
+            x = -6;
+            y = -6;
+        }
     }
 }
 
@@ -133,6 +212,14 @@ int main()
     uart_set_irq_enables(UART_ID, true, false);
 
     // Send characters without conversion
+    char buffer[50];
+    int a = 10, b = 20, c;
+    c = a + b;
+    sprintf(buffer, "Sum of %d and %d is %d", a, b, c);
+    uart_puts(UART_ID, buffer);
+
+    // The string "sum of 10 and 20 is 30" is stored
+    // into buffer instead of printing on stdout
     uart_puts(UART_ID, "Starting UART\n");
 
     // Set up repeating timer

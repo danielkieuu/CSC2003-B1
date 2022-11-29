@@ -146,6 +146,7 @@ int main() {
 		initial_result = adc_read(); 	// -- RAW VALUE: 0xfe5
 		initial_value = initial_result * CONVERSION_FACTOR * MARGIN_MULTIPLIER;
 
+		printf("[*] Looking for white bars...\n");
 		// -- WHILE its BLACK (at the start)
 		while (initial_value > THRESHOLD_VALUE) {									
 			
@@ -164,6 +165,7 @@ int main() {
 					third_result = adc_read(); 	// -- RAW VALUE: 0xfe5
 					third_value = third_result * CONVERSION_FACTOR * MARGIN_MULTIPLIER;
 					values[position] += (third_value + PADDING_VALUE);
+					
 					// -- FULL WHITE (LOW LEVEL)
 					if (third_value <= THRESHOLD_VALUE) {         							
 						printf("\tWHITE 00-> %0.2f\n", third_value + PADDING_VALUE);
@@ -200,7 +202,7 @@ int main() {
 							// -- Detect if the previous white detection is a False Positive
 							// -- To show that we are back on black main track
 							if (values[position] > UPPER_BLACK_LIMIT){
-								printf("[!] Detected a False Positive of white detected!\n[!] Reverting back to scanning...");
+								printf("[!] Detected a False Positive of white detected!\n");
 								// -- RESET VALUES ARRAY
 								for(int i = 0; i < BARCODE_SIZE; i++)
 									values[i] = 0;
@@ -284,11 +286,12 @@ int main() {
 						}
 					}
 				}
+
+				printf("\n[*] colorString formed!\n\t");
 				for (int k = 0; k < PATTERN_SIZE; k++){
 					sleep_ms(50);
 					printf("%c",colorString[k]);
 				}
-				printf("\ncolorString formed!\n");
 				char *finalResults = stringAnalysis(colorString);
 				sleep_ms(100);
 				for (int m; m < 3; m++){
@@ -306,7 +309,7 @@ int main() {
 				break;
 			}
 			else if (error_flag == true){
-				printf("ERROR FLAG DETECTED, Exiting to FIRST WHILE LOOP!");
+				printf("[!] Error Flag detected -> Reverting back to scanning...\n");
 				// -- RESET VALUES ARRAY
 				for(int i = 0; i < BARCODE_SIZE; i++)
 					values[i] = 0;

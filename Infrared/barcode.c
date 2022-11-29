@@ -34,6 +34,7 @@ const int PATTERN_SIZE = 38;
 const int PADDING_VALUE = 5;
 const int NUMBER_OF_SEQUENCES = 3;
 
+extern struct COMMS_DATA;
 
 const char COLOR_ARRAY[NUMBER_OF_CHARS][MAX_STRING_SIZE] = {"BWBWWBBWBBWB","BBWBWWBWBWBB","BWBBWWBWBWBB","BBWBBWWBWBWB","BWBWWBBWBWBB","BBWBWWBBWBWB","BWBBWWBBWBWB","BWBWWBWBBWBB","BBWBWWBWBBWB","BWBBWWBWBBWB","BBWBWBWWBWBB","BWBBWBWWBWBB","BBWBBWBWWBWB","BWBWBBWWBWBB","BBWBWBBWWBWB","BWBBWBBWWBWB","BWBWBWWBBWBB","BBWBWBWWBBWB","BWBBWBWWBBWB","BWBWBBWWBBWB","BBWBWBWBWWBB","BWBBWBWBWWBB","BBWBBWBWBWWB","BWBWBBWBWWBB","BBWBWBBWBWWB","BWBBWBBWBWWB","BWBWBWBBWWBB","BBWBWBWBBWWB","BWBBWBWBBWWB","BWBWBBWBBWWB","BBWWBWBWBWBB","BWWBBWBWBWBB","BBWWBBWBWBWB","BWWBWBBWBWBB","BBWWBWBBWBWB","BWWBBWBBWBWB","BWWBWBWBBWBB","BBWWBWBWBBWB","BWWBBWBWBBWB","BWWBWWBWWBWB","BWWBWWBWBWWB","BWWBWBWWBWWB","BWBWWBWWBWWB","BWWBWBBWBBWB"};
 const char CHAR_ARRAY[NUMBER_OF_CHARS][1] = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","-","."," ","$","/","+","%","*"};
@@ -294,10 +295,10 @@ int main() {
 				}
 				char *finalResults = stringAnalysis(colorString);
 				sleep_ms(100);
-				for (int m; m < 3; m++){
+				for (int m; m < NUMBER_OF_SEQUENCES; m++){
 					sleep_ms(50);
-					printf("Detected Char: %c\n", finalResults[m]);
-					// -- Throw char to comms (ZhiZhan)
+					printf("Sending Char: %c to comms\n", finalResults[m]);
+					COMMS_DATA.barcode[m] = finalResults[m];
 				}
 
 				// -- RESET VALUES ARRAY

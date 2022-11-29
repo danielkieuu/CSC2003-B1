@@ -12,11 +12,25 @@
 #define UART_RX_PIN 1
 
 // TODO : GET SPEED, HUMP HEIGHT, DISTANCE, BARCODE DATA
+struct Data
+{
+    int speed;
+    int hump;
+    int dist;
+    int barcode;
+} DATA;
+
+// Simulate changing data
 volatile uint8_t count = 0;
+
+// Send data via uart to M5StickC
 bool repeating_timer_callback(struct repeating_timer *t)
 {
-    char text[16];
-    sprintf(text, "3%d,4%d,6%d,1123%d\n", count, count, count, count);
+    char text[15];
+    DATA.speed = 10;
+    DATA.hump = 20;
+    DATA.dist = 30;
+    sprintf(text, "%d,%d,%d,%d%d\n", DATA.speed, DATA.hump, DATA.dist, DATA.barcode, count);
     uart_puts(UART_ID, text);
 
     // For simulating changing data
@@ -28,7 +42,7 @@ bool repeating_timer_callback(struct repeating_timer *t)
     return true;
 }
 
-// RX interrupt handler
+// Receive data via uart from M5StickC
 void on_uart_rx()
 {
     // negative flag
@@ -127,15 +141,14 @@ int main()
     // Now enable the UART to send interrupts - RX only
     uart_set_irq_enables(UART_ID, true, false);
 
-    // Send characters without conversion
-    uart_puts(UART_ID, "Starting UART\n");
-
     // Set up repeating timer
     struct repeating_timer timer;
     add_repeating_timer_ms(1000, repeating_timer_callback, NULL, &timer);
 
+    // Poll to prevent program from exiting
     while (1)
     {
+
         tight_loop_contents();
     }
 

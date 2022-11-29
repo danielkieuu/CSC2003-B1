@@ -103,12 +103,13 @@ void calculate_pwm_change_pwm(){
 
 float distance_travelled(int time_elapsed){
     int distance_per_interval = 2*PI*3; //r = 3, calibrated, interval of 1 second
-    return ((wheel_left_rotation/distance_per_interval)+(wheel_right_rotation/distance_per_interval))/2 //returns average distance in cm
+    return ((wheel_left_rotation/distance_per_interval)+(wheel_right_rotation/distance_per_interval))/2; //returns average distance in cm
 }
 
 bool timer_callback(struct repeating_timer *t){
     calculate_pwm_change_pwm();
     time_elapsed += 1;
+    return 0;
 }
 
 void offset_duty_cycle(int duty_cycle_offset){  //Takes in a int 
@@ -186,6 +187,8 @@ float PID_Compute(absolute_time_t time, struct PID *pid) {
     float err_diff = -(2.0f * pid->Kd * (pid->measured - pid->prev_measured)
                      +(2.0f * pid->tau - time_delta) * pid->differentiator)
                      /(2.0f * pid->tau + time_delta);
+    
+    pid->differentiator = err_diff;
 
     // Store what we need for next time
     pid->prev_err = error; 

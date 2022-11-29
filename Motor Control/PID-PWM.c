@@ -5,6 +5,8 @@
 #include "hardware/pwm.h"
 #include "PID-PWM.h"
 
+#define PI 3.14159
+
 const int INPUT_A_LEFT = 18;
 const int INPUT_B_LEFT = 19;
 const int INPUT_A_RIGHT = 20;
@@ -18,8 +20,10 @@ const int DEGREE_PER_NOTCH = 9;
 bool is_turning = false;
 
 float wheel_left_rotation = 0.0;
-float wheel_right_rotations = 0.0;
+float wheel_right_rotation = 0.0;
 float global_rpm = 0.0;
+
+int time_elapsed = 0;
 
 u_short PWM_RIGHT_CYCLE = 22500;
 u_short PWM_LEFT_CYCLE = 32768;
@@ -86,14 +90,36 @@ void move_forward(){
     gpio_put(INPUT_B_RIGHT, 0);
 }
 
-bool calculate_pwm_change_pwm(struct repeating_timer *t){
+void calculate_pwm_change_pwm(){
     if (!is_turning){
         pid_ctrl_ptr_right = &pid_control_right;
         pid_ctrl_ptr_right->setpoint = wheel_left_rotation;
-        pid_ctrl_ptr_right->measured = wheel_right_rotations;
+        pid_ctrl_ptr_right->measured = wheel_right_rotation;
         absolute_time_t curr_time = get_absolute_time();
         float diff_right = PID_Compute(curr_time, pid_ctrl_ptr_right);
         change_pwm(diff_right, 1);
+    }
+}
+
+float distance_travelled(int time_elapsed){
+    int distance_per_interval = 2*PI*3; //r = 3, calibrated, interval of 1 second
+    return ((wheel_left_rotation/distance_per_interval)+(wheel_right_rotation/distance_per_interval))/2 //returns average distance in cm
+}
+
+bool timer_callback(struct repeating_timer *t){
+    calculate_pwm_change_pwm();
+    time_elapsed += 1;
+}
+
+void offset_duty_cycle(int duty_cycle_offset){  //Takes in a int 
+    if (PWM_RIGHT_CYCLE +  duty_cycle_offset > 65535 || PWM_LEFT_CYCLE + duty_cycle_offset > 65535){
+        PWM_RIGHT_CYCLE += duty_cycle_offset;
+        PWM_LEFT_CYCLE += duty_cycle_offset;
+    } else {    //Sets PWM to default value so we don't overflow
+        PWM_RIGHT_CYCLE = 22500;
+        PWM_LEFT_CYCLE = 32768;
+        PWM_RIGHT_CYCLE += duty_cycle_offset;
+        PWM_LEFT_CYCLE += duty_cycle_offset;
     }
 }
 
@@ -104,7 +130,7 @@ void set_duty_cycle() {
 }
 
 void wheel_speed_right(){
-    wheel_right_rotations += 0.05;
+    wheel_right_rotation += 0.05;
 }
 
 void wheel_speed_left(){
@@ -227,7 +253,7 @@ int main()
     pwm_init(slice_num, &config, true);
 
     //Sets timer to fire every 1s
-    add_repeating_timer_ms(1000, calculate_pwm_change_pwm, NULL, &timer);
+    add_repeating_timer_ms(1000, timer_callback, NULL, &timer);
 
     while(1){
         turn_left(90);

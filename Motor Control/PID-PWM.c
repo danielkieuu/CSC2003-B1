@@ -12,7 +12,7 @@ const int INPUT_B_LEFT = 19;
 const int INPUT_A_RIGHT = 20;
 const int INPUT_B_RIGHT = 21;
 const int WHEEL_ENCODER_RIGHT = 5;
-const int WHEEL_ENCODER_LEFT = 8;
+const int WHEEL_ENCODER_LEFT = 6;
 const int PWM_LEFT = 17;
 const int PWM_RIGHT = 16;
 const int DEGREE_PER_NOTCH = 9;
@@ -25,7 +25,7 @@ float global_rpm = 0.0;
 
 int time_elapsed = 0;
 
-u_short PWM_RIGHT_CYCLE = 22500;
+u_short PWM_RIGHT_CYCLE = 32768;
 u_short PWM_LEFT_CYCLE = 32768;
 
 int degrees_to_turn = 0;
@@ -84,10 +84,10 @@ void turn_right(int degrees){
 
 void move_forward(){
     // Set channel to high to move motor
-    gpio_put(INPUT_A_LEFT, 0);
-    gpio_put(INPUT_A_RIGHT, 1);
-    gpio_put(INPUT_B_LEFT, 1);
-    gpio_put(INPUT_B_RIGHT, 0);
+    gpio_put(INPUT_A_LEFT, 1);
+    gpio_put(INPUT_A_RIGHT, 0);
+    gpio_put(INPUT_B_LEFT, 0);
+    gpio_put(INPUT_B_RIGHT, 1);
 }
 
 void calculate_pwm_change_pwm(){
@@ -103,12 +103,13 @@ void calculate_pwm_change_pwm(){
 
 float distance_travelled(int time_elapsed){
     int distance_per_interval = 2*PI*3; //r = 3, calibrated, interval of 1 second
-    return ((wheel_left_rotation/distance_per_interval)+(wheel_right_rotation/distance_per_interval))/2 //returns average distance in cm
+    return ((wheel_left_rotation/distance_per_interval)+(wheel_right_rotation/distance_per_interval))/2; //returns average distance in cm
 }
 
 bool timer_callback(struct repeating_timer *t){
     calculate_pwm_change_pwm();
     time_elapsed += 1;
+    return 0;
 }
 
 void offset_duty_cycle(int duty_cycle_offset){  //Takes in a int 
@@ -116,7 +117,7 @@ void offset_duty_cycle(int duty_cycle_offset){  //Takes in a int
         PWM_RIGHT_CYCLE += duty_cycle_offset;
         PWM_LEFT_CYCLE += duty_cycle_offset;
     } else {    //Sets PWM to default value so we don't overflow
-        PWM_RIGHT_CYCLE = 22500;
+        PWM_RIGHT_CYCLE = 32768;
         PWM_LEFT_CYCLE = 32768;
         PWM_RIGHT_CYCLE += duty_cycle_offset;
         PWM_LEFT_CYCLE += duty_cycle_offset;
@@ -130,7 +131,19 @@ void set_duty_cycle() {
 }
 
 void wheel_speed_right(){
-    wheel_right_rotation += 0.05;
+    if (is_turning){
+        if (counter_notches_turn * DEGREE_PER_NOTCH >= degrees_to_turn){
+            stop_movement();
+            degrees_to_turn = 0;
+            counter_notches_turn = 0;
+            is_turning = false;
+        } else {
+            counter_notches_turn += 1;
+        }
+    }
+    else {
+        wheel_right_rotation += 0.05;
+    }
 }
 
 void wheel_speed_left(){
@@ -186,6 +199,8 @@ float PID_Compute(absolute_time_t time, struct PID *pid) {
     float err_diff = -(2.0f * pid->Kd * (pid->measured - pid->prev_measured)
                      +(2.0f * pid->tau - time_delta) * pid->differentiator)
                      /(2.0f * pid->tau + time_delta);
+
+    pid->differentiator = err_diff;
 
     // Store what we need for next time
     pid->prev_err = error; 
@@ -256,9 +271,8 @@ int main()
     add_repeating_timer_ms(1000, timer_callback, NULL, &timer);
 
     while(1){
-        turn_left(90);
-        sleep_ms(2000);
-        stop_movement();
+        turn_right(90);
+        sleep_ms(10000);
     };
 
     return 0;

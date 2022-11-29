@@ -33,10 +33,10 @@ Team B1 of CSC2003 Embedded Systems
 | ---------- | --------------------- |
 | GPIO 0     | UART TX               |
 | GPIO 1     | UART RX               |
-| GPIO 10    | Ultrasonic Front Trig |
-| GPIO 11    | Ultrasonic Front Echo |
-| GPIO 12    | Ultrasonic Left Trig  |
-| GPIO 13    | Ultrasonic Left Echo  |
+| GPIO 9    | Ultrasonic Front Trig |
+| GPIO 10    | Ultrasonic Front Echo |
+| GPIO 11    | Ultrasonic Left Trig  |
+| GPIO 12    | Ultrasonic Left Echo  |
 | GPIO 14    | Ultrasonic Right Trig |
 | GPIO 15    | Ultrasonic Right Echo |
 | GPIO 16    | ENA                   |

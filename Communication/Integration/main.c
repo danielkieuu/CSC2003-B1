@@ -43,16 +43,21 @@ void on_uart_rx()
         char ch = uart_getc(UART_ID);
 
         // IMU 'A' prefix
+        // if run to here means detected angle of elevation, speed up
         if ((uint8_t)ch == 65)
         {
             isImu1 = 1;
-            continue;
+            // call offset_duty_cycle from PID to speed up
+            // set the value to within 30k
+            offset_duty_cycle(29000) continue;
         }
 
         // IMU 'B' prefix
+        // No angle of elevation, keep moving with default speed
         else if ((uint8_t)ch == 66)
         {
             isImu2 = 1;
+
             continue;
         }
 

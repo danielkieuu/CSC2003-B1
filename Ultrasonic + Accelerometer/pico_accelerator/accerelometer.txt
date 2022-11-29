@@ -8,117 +8,11 @@ from math import atan, atan2, sqrt
 from math import degrees as rad2deg
 
 
-
-  
-class KalmanCalculator():
-    MEASUREMENT_INTERVAL = 0.05  # Accelerometer measurement interval
-
-    def __init__(self, name, mpu: 'MPU6050'):
-        # threading.Thread.__init__(self, name=name, daemon=)
-        super().__init__(name=name, daemon=True)
-        self.name = name
-        self.mpu = mpu
-
-        self._kalman_x = KalmanAngle()
-        self._kalman_y = KalmanAngle()
-
-        self._roll = 0  # Variable which holds the processed roll (x angle)
-        self._pitch = 0  # variable which holds the processed pitch (y angle)
-        self._kal_angle_x = 0
-        self._kal_angle_y = 0
-        self._compl_angle_x = 0
-        self._compl_angle_y = 0
-        self._gyro_angle_x = 0
-        self._gyro_angle_y = 0
-
-        self._timer = 0
-
-        # lock for thread-safe access to roll and pitch
-        # self._read_lock = threading.Lock()
-        self.interrupted = False  # Flag to interrupt the thread
-
-    def get_roll(self) -> float:
-        """Get the roll (x angle)"""
-        with self._read_lock:
-            return self._roll
-
-    def get_pitch(self) -> float:
-        """Get the pitch (y angle)"""
-        with self._read_lock:
-            return self._pitch
-
-    def get_angle_x(self) -> float:
-        """Get the x angle (roll)"""
-        return self.get_roll()
-
-    def get_angle_y(self) -> float:
-        """Get the y angle (pitch)"""
-        return self.get_pitch()
-
-    def get_angles(self) -> tuple:
-        """Get a tuple of angles"""
-        return self.get_roll(), self.get_pitch()
-
-    def measure_angle(self) -> tuple:
-        """Measure at what angle the accelerometer currently is using the information of previous measurements."""
-        # Read Accelerometer raw value
-        acc_data = self.mpu.get_accel_data()
-        acc_x = acc_data['x']
-        acc_y = acc_data['y']
-        acc_z = acc_data['z']
-
-        # Read Gyroscope raw value
-        gyro_data = self.mpu.get_gyro_data()
-        gyro_x = gyro_data['x']
-        gyro_y = gyro_data['y']
-        gyro_z = gyro_data['z']  # Not used
-
-        dt = time.time() - self._timer
-        self._timer = time.time()
-
-        roll = rad2deg(atan2(acc_y, acc_z))
-        pitch = rad2deg(atan(-acc_x / sqrt((acc_y ** 2) + (acc_z ** 2))))
-
-        gyro_rate_x = gyro_x / self.mpu.get_gyro_scale_modifier()  # Scale the gyroscope
-        gyro_rate_y = gyro_y / self.mpu.get_gyro_scale_modifier()  # Scale the gyroscope
-
-        if (roll < -90 and self._kal_angle_x > 90) or (roll > 90 and self._kal_angle_x < -90):
-            self._kalman_x.setAngle(roll)
-            self._compl_angle_x = roll
-            self._kal_angle_x = roll
-            self._gyro_angle_x = roll
-        else:
-            self._kal_angle_x = self._kalman_x.getAngle(roll, gyro_rate_x, dt)
-
-        if abs(self._kal_angle_y) > 90:  # If the pitch is bigger than 90 degrees, invert it
-            gyro_rate_y = -gyro_rate_y
-            self._kal_angle_y = self._kalman_y.getAngle(pitch, gyro_rate_y, dt)
-
-        # angle = (rate of change of angle) * change in time
-        self._gyro_angle_x = gyro_rate_x * dt
-        self._gyro_angle_y = gyro_rate_y * dt
-
-        # compAngle = constant * (old_compAngle + angle_obtained_from_gyro) + constant * angle_obtained from accelerometer
-        self._compl_angle_x = 0.93 * \
-            (self._compl_angle_x + gyro_rate_x * dt) + 0.07 * roll
-        self._compl_angle_y = 0.93 * \
-            (self._compl_angle_y + gyro_rate_y * dt) + 0.07 * pitch
-
-        # Adjust angles to range (-180, 180)
-        if (self._gyro_angle_x < -180) or (self._gyro_angle_x > 180):
-            self._gyro_angle_x = self._kal_angle_x
-        if (self._gyro_angle_y < -180) or (self._gyro_angle_y > 180):
-            self._gyro_angle_y = self._kal_angle_y
-
-        with self._read_lock:
-            self._pitch = self._compl_angle_y
-            self._roll = self._compl_angle_x
-            return self._roll, self._pitch  # Return the x and y angles
-
-
 class KalmanAngle:
 
     def __init__(self):
+      
+        # Preset configuration by using MPU6050 configuration
         self.QAngle = 0.001
         self.QBias = 0.003
         self.RMeasure = 0.03
@@ -126,26 +20,27 @@ class KalmanAngle:
         self.bias = 0.0
         self.rate = 0.0
         self.P = [[0.0, 0.0], [0.0, 0.0]]
-
+    
+    # Get Kalman Angle
     def getAngle(self, newAngle, newRate, dt):
         # step 1:
         self.rate = newRate - self.bias  # new_rate is the latest Gyro measurement
         self.angle += dt * self.rate
 
-        # Step 2:
+        # Step 2: update the matrix with sensor rate and date time
         self.P[0][0] += dt * (dt * self.P[1][1] - self.P[0]
                               [1] - self.P[1][0] + self.QAngle)
         self.P[0][1] -= dt * self.P[1][1]
         self.P[1][0] -= dt * self.P[1][1]
         self.P[1][1] += self.QBias * dt
 
-        # Step 3: Innovation
+        # Step 3: Innovation, create a new Y angle
         y = newAngle - self.angle
 
         # Step 4: Innovation covariance
         s = self.P[0][0] + self.RMeasure
 
-        # Step 5:    Kalman Gain
+        # Step 5: Update Kalman Gain
         K = [0.0, 0.0]
         K[0] = self.P[0][0] / s
         K[1] = self.P[1][0] / s
@@ -165,44 +60,28 @@ class KalmanAngle:
 
         return self.angle
 
-    def setAngle(self, angle):
-        self.angle = angle
 
-    def setQAngle(self, QAngle):
-        self.QAngle = QAngle
-
-    def setQBias(self, QBias):
-        self.QBias = QBias
-
-    def setRMeasure(self, RMeasure):
-        self.RMeasure = RMeasure
-
-    def getRate(self):
-        return self.rate
-
-    def getQAngle(self):
-        return self.QAngle
-
-    def getQBias(self):
-        return self.QBias
-
-    def getRMeasure(self):
-        return self.RMeasure
-
-
+# Function to convert x y z axis from accelerometer to x and y angle
 def acc_angle(Ax, Ay, Az):
+  
+    # Convert from radian to degree
     radToDeg = 180/3.14159
+    # Return the arc tangent of using y axis to generate angle x
     ax_angle = math.atan(Ay/math.sqrt(math.pow(Ax,2) + math.pow(Az, 2)))*radToDeg
+    # Return the arc tangent of using x axis to generate angle y
     ay_angle = math.atan((-1*Ax)/math.sqrt(math.pow(Ay,2) + math.pow(Az, 2)))*radToDeg
     return (ax_angle, ay_angle)
 
 def gyr_angle(Gx, Gy, Gz, dt):
+    
     gx_angle = Gx*dt + get_last_x_angle()
     gy_angle = Gy*dt + get_last_y_angle()
     gz_angle = Gz*dt + get_last_z_angle()
     return (gx_angle, gy_angle, gz_angle)
 
-  # A complementary filter to determine the change in angle by combining accelerometer and gyro values. Alpha depends on the sampling rate...
+  # A complementary filter to determine the change in angle by combining accelerometer and gyro values. 
+  # Alpha is the filtered gain and it is depends on the sampling rate...
+  # we are setting it as 0.9 by following MPU6050 config
 def c_filtered_angle(ax_angle, ay_angle, gx_angle, gy_angle):
     alpha = 0.90
     c_angle_x = alpha*gx_angle + (1.0 - alpha)*ax_angle
@@ -264,9 +143,17 @@ calib_z_gyro  = 0.0
 uart1 = machine.UART(1, tx=32, rx=33)
 uart1.init(115200, bits=8, parity=None, stop=1)
 while True:
-
+  
+  # write ccurent time to timestmap
   t_now = time.ticks_ms()
+  # print((str('t_now') + str(t_now) ))
+
+  
+  # Get the proper time stamp minus the last reading time and convert to second
   dt = (t_now - get_last_time())/1000.0
+  
+  # print((str('dt') + str(dt) ))
+
   
   # Format the sensor value
 
@@ -285,20 +172,27 @@ while True:
   (k_angle_x, k_angle_y) = k_filtered_angle(acc_angles[0], acc_angles[1], Gx, Gy, dt)
   
   print( ( str('cx angle') + str(round(c_angle_x, 2)))    )
-  print((str('cy angle') + str(round(c_angle_y, 2))))
+  # print((str('cy angle') + str(round(c_angle_y, 2))))
   print((str('kx angle') + str(round(k_angle_x, 2))))
-  print((str('ky angle') + str( round(k_angle_y, 2) ) )   )
+  # print((str('ky angle') + str( round(k_angle_y, 2) ) )   )
   
-
+  
   label0.setText(( str('cx') + str(round(c_angle_x, 2)))        )
   label1.setText(( str('cy') + str(round(c_angle_y, 2)))        )
   label2.setText(( str('kx') + str(round(k_angle_x, 2)))        )
   label3.setText(( str('ky') + str(round(k_angle_y, 2))   )        )
-  uart1.write(str(round(k_angle_y, 2))  )
+  
+  # Preset an angle and write to UART if exceed this angle 
+  # Angle of elevation
+  if(k_angle_x > 28 ):
+    uart1.write(str("A")  )
+  
+  # uart1.write(str(round(k_angle_y, 2))  )
 
   if uart1.any():
     kalman_angle_y = (uart1.readline()).decode()
-    print(kalman_angle_y)
+    print((str('indicator') + str( kalman_angle_y ) )   )
+
   wait(1)
   wait_ms(2)
 

@@ -1,6 +1,7 @@
 #include "Motor Control/PID-PWM.h"
 #include "Ultrasonic + Accelerometer/ultrasonic/ultrasonic.h"
 #include "Mapping/mapping.c"
+#include "Communication/Integration/main.c"
 
 #define PI 3.14159
 
@@ -23,7 +24,16 @@ const int INPUT_B_RIGHT = 21;
 const int BARCODE_IR = 28;
 
 const int DEGREE_PER_NOTCH = 9;
+struct COMMS_DATA
+{
+    int speed;
+    int hump;
+    int dist;
+    char barcode[3];
+} COMMS_DATA;
 
-int main(){
+int main()
+{
+    comms_main();
     Map();
 }

@@ -87,7 +87,6 @@ int main(void)
     /* Reset uart received data */
     uartReceivedData[0] = 0;
 
-    UART_Printf(EUSCI_A2_BASE, "Starting UART\n\r");
     while (1)
     {
         PCM_gotoLPM3InterruptSafe();

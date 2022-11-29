@@ -59,18 +59,18 @@ uint64_t getCm(uint trigPin, uint echoPin)
 
 uint64_t scanForward()
 {
-    uint64_t forwardDistance = getPulse(GPIO_PIN_FRONT_TRIG,GPIO_PIN_FRONT_ECHO);
-    return forwardDistance / 29 / 2;
+    uint64_t forwardDist = getPulse(GPIO_PIN_FRONT_TRIG,GPIO_PIN_FRONT_ECHO);
+    return forwardDist / 29 / 2;
 }
 
 uint64_t scanLeft()
 {
-    uint64_t leftDistance = getPulse(GPIO_PIN_LEFT_TRIG,GPIO_PIN_LEFT_ECHO);
-    return leftDistance / 29 / 2;
+    uint64_t leftDist = getPulse(GPIO_PIN_LEFT_TRIG,GPIO_PIN_LEFT_ECHO);
+    return leftDist / 29 / 2;
 }
 
 uint64_t scanRight()
 {
-    uint64_t rightDistance = getPulse(GPIO_PIN_RIGHT_TRIG,GPIO_PIN_RIGHT_ECHO);
-    return rightDistance / 29 / 2;
+    uint64_t rightDist = getPulse(GPIO_PIN_RIGHT_TRIG,GPIO_PIN_RIGHT_ECHO);
+    return rightDist / 29 / 2;
 }

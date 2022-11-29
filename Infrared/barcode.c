@@ -34,6 +34,7 @@ const int PATTERN_SIZE = 38;
 const int PADDING_VALUE = 5;
 const int NUMBER_OF_SEQUENCES = 3;
 
+extern struct COMMS_DATA;
 
 const char COLOR_ARRAY[NUMBER_OF_CHARS][MAX_STRING_SIZE] = {"BWBWWBBWBBWB","BBWBWWBWBWBB","BWBBWWBWBWBB","BBWBBWWBWBWB","BWBWWBBWBWBB","BBWBWWBBWBWB","BWBBWWBBWBWB","BWBWWBWBBWBB","BBWBWWBWBBWB","BWBBWWBWBBWB","BBWBWBWWBWBB","BWBBWBWWBWBB","BBWBBWBWWBWB","BWBWBBWWBWBB","BBWBWBBWWBWB","BWBBWBBWWBWB","BWBWBWWBBWBB","BBWBWBWWBBWB","BWBBWBWWBBWB","BWBWBBWWBBWB","BBWBWBWBWWBB","BWBBWBWBWWBB","BBWBBWBWBWWB","BWBWBBWBWWBB","BBWBWBBWBWWB","BWBBWBBWBWWB","BWBWBWBBWWBB","BBWBWBWBBWWB","BWBBWBWBBWWB","BWBWBBWBBWWB","BBWWBWBWBWBB","BWWBBWBWBWBB","BBWWBBWBWBWB","BWWBWBBWBWBB","BBWWBWBBWBWB","BWWBBWBBWBWB","BWWBWBWBBWBB","BBWWBWBWBBWB","BWWBBWBWBBWB","BWWBWWBWWBWB","BWWBWWBWBWWB","BWWBWBWWBWWB","BWBWWBWWBWWB","BWWBWBBWBBWB"};
 const char CHAR_ARRAY[NUMBER_OF_CHARS][1] = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","-","."," ","$","/","+","%","*"};
@@ -146,6 +147,7 @@ int main() {
 		initial_result = adc_read(); 	// -- RAW VALUE: 0xfe5
 		initial_value = initial_result * CONVERSION_FACTOR * MARGIN_MULTIPLIER;
 
+		printf("[*] Looking for white bars...\n");
 		// -- WHILE its BLACK (at the start)
 		while (initial_value > THRESHOLD_VALUE) {									
 			
@@ -164,6 +166,7 @@ int main() {
 					third_result = adc_read(); 	// -- RAW VALUE: 0xfe5
 					third_value = third_result * CONVERSION_FACTOR * MARGIN_MULTIPLIER;
 					values[position] += (third_value + PADDING_VALUE);
+					
 					// -- FULL WHITE (LOW LEVEL)
 					if (third_value <= THRESHOLD_VALUE) {         							
 						printf("\tWHITE 00-> %0.2f\n", third_value + PADDING_VALUE);
@@ -200,7 +203,7 @@ int main() {
 							// -- Detect if the previous white detection is a False Positive
 							// -- To show that we are back on black main track
 							if (values[position] > UPPER_BLACK_LIMIT){
-								printf("[!] Detected a False Positive of white detected!\n[!] Reverting back to scanning...");
+								printf("[!] Detected a False Positive of white detected!\n");
 								// -- RESET VALUES ARRAY
 								for(int i = 0; i < BARCODE_SIZE; i++)
 									values[i] = 0;
@@ -284,17 +287,18 @@ int main() {
 						}
 					}
 				}
+
+				printf("\n[*] colorString formed!\n\t");
 				for (int k = 0; k < PATTERN_SIZE; k++){
 					sleep_ms(50);
 					printf("%c",colorString[k]);
 				}
-				printf("\ncolorString formed!\n");
 				char *finalResults = stringAnalysis(colorString);
 				sleep_ms(100);
-				for (int m; m < 3; m++){
+				for (int m; m < NUMBER_OF_SEQUENCES; m++){
 					sleep_ms(50);
-					printf("Detected Char: %c\n", finalResults[m]);
-					// -- Throw char to comms (ZhiZhan)
+					printf("Sending Char: %c to comms\n", finalResults[m]);
+					COMMS_DATA.barcode[m] = finalResults[m];
 				}
 
 				// -- RESET VALUES ARRAY
@@ -306,7 +310,7 @@ int main() {
 				break;
 			}
 			else if (error_flag == true){
-				printf("ERROR FLAG DETECTED, Exiting to FIRST WHILE LOOP!");
+				printf("[!] Error Flag detected -> Reverting back to scanning...\n");
 				// -- RESET VALUES ARRAY
 				for(int i = 0; i < BARCODE_SIZE; i++)
 					values[i] = 0;

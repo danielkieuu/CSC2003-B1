@@ -54,10 +54,10 @@ Click here to [view](https://viewer.diagrams.net/?tags=%7B%7D&highlight=0000ff&e
 
 ### Pico_M5Stick_I2C (attempted)
 
-1. `M5 Stick`(Master), `Pico`(Slave)
+1. `M5StickC PLUS`(Master), `Pico`(Slave)
 2. Scan GPIO to identify I2C devices.
-3. Data send from `pico` to `m5 stick`.
-4. `M5 Stick` recieved the data and sent to `MQTT Client`
+3. Data send from `pico` to `M5StickC PLUS`.
+4. `M5StickC PLUS` recieved the data and sent to `MQTT Client`
 
 #### Flowchart
 

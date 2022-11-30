@@ -11,11 +11,11 @@ int main()
     stdio_init_all();
     setupUltrasonicPins();
     // testing purposes
-    // while (true) { 
-    //     printf("\n %d cm", scanLeft()); 
-    //     sleep_ms(100);
-    // }
-    scanForward(); //function to scan forward 
-    scanLeft(); //function to scan left
-    scanRight(); //function to scan right
+    while (true) { 
+        printf("\n %d cm", scanRight());
+        sleep_ms(100);
+    }
+    // scanForward(); //function to scan forward 
+    // scanLeft(); //function to scan left
+    // scanRight(); //function to scan right
 }

@@ -5,12 +5,12 @@
 #include "hardware/gpio.h"
 #include "hardware/timer.h"
 
-#define GPIO_PIN_FRONT_TRIG 15
-#define GPIO_PIN_FRONT_ECHO 14
-#define GPIO_PIN_LEFT_TRIG 13
-#define GPIO_PIN_LEFT_ECHO 12
-#define GPIO_PIN_RIGHT_TRIG 11
-#define GPIO_PIN_RIGHT_ECHO 10
+#define GPIO_PIN_FRONT_TRIG 10
+#define GPIO_PIN_FRONT_ECHO 11
+#define GPIO_PIN_LEFT_TRIG 12
+#define GPIO_PIN_LEFT_ECHO 13
+#define GPIO_PIN_RIGHT_TRIG 14
+#define GPIO_PIN_RIGHT_ECHO 15
 
 int timeout = 26100;
 
@@ -51,26 +51,20 @@ uint64_t getPulse(uint trigPin, uint echoPin)
     return absolute_time_diff_us(startTime, endTime);
 }
 
-uint64_t getCm(uint trigPin, uint echoPin)
-{
-    uint64_t pulseLength = getPulse(trigPin, echoPin);
-    return pulseLength / 29 / 2;
-}
-
 uint64_t scanForward()
 {
-    uint64_t forwardDist = getPulse(GPIO_PIN_FRONT_TRIG,GPIO_PIN_FRONT_ECHO);
-    return forwardDist / 29 / 2;
+    uint64_t forwardDistance = getPulse(GPIO_PIN_FRONT_TRIG,GPIO_PIN_FRONT_ECHO);
+    return forwardDistance / 29 / 2;
 }
 
 uint64_t scanLeft()
-{
-    uint64_t leftDist = getPulse(GPIO_PIN_LEFT_TRIG,GPIO_PIN_LEFT_ECHO);
-    return leftDist / 29 / 2;
+{     
+    uint64_t leftDistance = getPulse(GPIO_PIN_LEFT_TRIG,GPIO_PIN_LEFT_ECHO);
+    return leftDistance / 29 / 2;
 }
 
 uint64_t scanRight()
 {
-    uint64_t rightDist = getPulse(GPIO_PIN_RIGHT_TRIG,GPIO_PIN_RIGHT_ECHO);
-    return rightDist / 29 / 2;
+    uint64_t rightDistance = getPulse(GPIO_PIN_RIGHT_TRIG,GPIO_PIN_RIGHT_ECHO);
+    return rightDistance / 29 / 2;
 }

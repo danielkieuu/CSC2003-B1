@@ -1,10 +1,14 @@
 ## Members
 
-| Ang Quan Xing | 2101536 | Accelerometer |
-| Toh Zheng Xiang | 2101089 | Ultrasonic |
-| Daniel Kieu | 2101231 | Ultrasonic |
+| Ang Quan Xing | 2101536 |
+| Toh Zheng Xiang | 2101089 |
+| Daniel Kieu | 2101231 |
 
 ## Sub component for accelerometer
+
+#### Flowchart
+
+Click here to view: https://drive.google.com/file/d/18v2qmqcGd1pVVukih6Ki_U0QFPf2-E_9/view?usp=sharing
 
 ## Pico Set-up
 

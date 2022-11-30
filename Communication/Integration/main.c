@@ -11,34 +11,14 @@
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 
-// TODO : GET SPEED, HUMP HEIGHT, DISTANCE, BARCODE DATA
-struct Data
-{
-    int speed;
-    int hump;
-    int dist;
-    int barcode;
-} DATA;
-
-// Simulate changing data
-volatile uint8_t count = 0;
+extern struct COMMS_DATA;
 
 // Send data via uart to M5StickC
 bool repeating_timer_callback(struct repeating_timer *t)
 {
-    char text[15];
-    DATA.speed = 10;
-    DATA.hump = 20;
-    DATA.dist = 30;
-    sprintf(text, "%d,%d,%d,%d%d\n", DATA.speed, DATA.hump, DATA.dist, DATA.barcode, count);
-    uart_puts(UART_ID, text);
-
-    // For simulating changing data
-    count++;
-    if (count == 5)
-    {
-        count = 0;
-    }
+    char data[sizeof(COMMS_DATA)];
+    sprintf(text, "%d,%d,%d,%s\n", COMMS_DATA.speed, COMMS_DATA.hump, COMMS_DATA.dist, COMMS_DATA.barcode);
+    uart_puts(UART_ID, data);
     return true;
 }
 
@@ -63,16 +43,21 @@ void on_uart_rx()
         char ch = uart_getc(UART_ID);
 
         // IMU 'A' prefix
+        // if run to here means detected angle of elevation, speed up
         if ((uint8_t)ch == 65)
         {
             isImu1 = 1;
-            continue;
+            // call offset_duty_cycle from PID to speed up
+            // set the value to within 30k
+            offset_duty_cycle(29000) continue;
         }
 
         // IMU 'B' prefix
+        // No angle of elevation, keep moving with default speed
         else if ((uint8_t)ch == 66)
         {
             isImu2 = 1;
+
             continue;
         }
 
@@ -164,7 +149,7 @@ void on_uart_rx()
     }
 }
 
-int main()
+int comms_main()
 {
     // Set up our UART with the required speed.
     uart_init(UART_ID, BAUD_RATE);
@@ -192,13 +177,6 @@ int main()
     // Set up repeating timer
     struct repeating_timer timer;
     add_repeating_timer_ms(1000, repeating_timer_callback, NULL, &timer);
-
-    // Poll to prevent program from exiting
-    while (1)
-    {
-
-        tight_loop_contents();
-    }
 
     // Kill repeating timer
     cancel_repeating_timer(&timer);

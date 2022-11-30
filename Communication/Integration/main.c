@@ -177,7 +177,4 @@ int comms_main()
     // Set up repeating timer
     struct repeating_timer timer;
     add_repeating_timer_ms(1000, repeating_timer_callback, NULL, &timer);
-
-    // Kill repeating timer
-    cancel_repeating_timer(&timer);
 }

@@ -35,5 +35,9 @@ struct COMMS_DATA
 int main()
 {
     comms_main();
+    COMMS_DATA.speed = 0;
+    COMMS_DATA.hump = 0;
+    COMMS_DATA.dist = 0;
+    COMMS_DATA.barcode[0] = '0';
     Map();
 }
